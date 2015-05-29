@@ -200,7 +200,8 @@ used for filling the lines with."
         (let* ((piece (aref (aref board y) x))
                (tile (plist-get (cdr (assoc piece pieces)) :tile)))
           (retris-render-tile xpm-string xpm-width
-                              (* x tile-size scale) (* y tile-size scale)
+                              (+ (* x tile-size scale) x-offset)
+                              (+ (* y tile-size scale) y-offset)
                               tiles tile-size scale tile))))))
 
 (retris-render-board retris-board-body retris-board-pixel-width 0 0
