@@ -157,10 +157,10 @@ used for filling the lines with."
   ;; introduces three glyphs on the right and one of the left
   (1+ (+ (* y (+ 4 xpm-width)) x)))
 
-(defun retris-xpm-peek (xpm-string xpm-width x y)
+(defsubst retris-xpm-peek (xpm-string xpm-width x y)
   (aref xpm-string (retris--xpm-body-offset xpm-width x y)))
 
-(defun retris-xpm-poke (xpm-string xpm-width x y char)
+(defsubst retris-xpm-poke (xpm-string xpm-width x y char)
   (aset xpm-string (retris--xpm-body-offset xpm-width x y) char))
 
 (retris-xpm-poke retris-board-body retris-board-pixel-width 159 319 ?.)
