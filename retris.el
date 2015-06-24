@@ -220,3 +220,38 @@ used for filling the lines with."
 ;; - introduce next piece preview and swap
 ;; - introduce gravity and gravity changes (essential for implementing
 ;;   something like TGM)
+(defvar retris-timer nil)
+
+(defun retris-redraw-board ()
+  (with-current-buffer "*retris*"
+    (retris-render-board retris-board-body retris-board-pixel-width 0 0
+                         retris-pieces retris-tiles retris-tile-size
+                         retris-scaling-factor retris-board)
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (insert
+       (propertize " " 'display (create-image (concat retris-board-header
+                                                      retris-board-body)
+                                              'xpm t
+                                              :color-symbols retris-palette))
+       "\n"))))
+
+(benchmark 100 ; 0.05s/0.02s
+  '(retris-render-tile retris-board-body retris-board-pixel-width 0 0
+                    retris-tiles retris-tile-size retris-scaling-factor ?a))
+(benchmark 100 ; 10.85s/4.3s
+  '(retris-render-board retris-board-body retris-board-pixel-width 0 0
+                        retris-pieces retris-tiles retris-tile-size
+                        retris-scaling-factor retris-board))
+
+(define-derived-mode retris-mode special-mode "Retris"
+  "A XPM game."
+  (buffer-disable-undo)
+  (unless retris-timer
+    (setq retris-timer (run-at-time nil 0.05 'retris-redraw-board))))
+
+(defun retris ()
+  (interactive)
+  (with-current-buffer (get-buffer-create "*retris*")
+    (retris-mode))
+  (display-buffer "*retris*"))
