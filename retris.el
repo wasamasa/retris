@@ -208,18 +208,8 @@ used for filling the lines with."
                      retris-pieces retris-tiles retris-tile-size
                      retris-scaling-factor retris-board)
 
-;; TODO:
-;; - implement the basic game
-;; - swap color palette for xpm
-;; - introduce proper-looking console variant
-;; - introduce ghost
-;; - introduce proper scoring (score for drop distance and
-;;   special events?)
-;; - introduce game modes
-;; - introduce theming
-;; - introduce next piece preview and swap
-;; - introduce gravity and gravity changes (essential for implementing
-;;   something like TGM)
+;; TODO pass less variables around for more readability
+
 (defvar retris-timer nil)
 
 (defun retris-redraw-board ()
@@ -243,6 +233,16 @@ used for filling the lines with."
   '(retris-render-board retris-board-body retris-board-pixel-width 0 0
                         retris-pieces retris-tiles retris-tile-size
                         retris-scaling-factor retris-board))
+
+;; TODO redraw as little as possible
+;; TODO write a function for drawing the initial board
+;; TODO write a function for erasing and drawing a falling piece
+;; TODO write a function for erasing and drawing a ghost piece
+;; TODO write a function for flashing and erasing a cleared line
+;; TODO write a function for redrawing the compacted stack (probably
+;; erase it completely, then redraw it with every line moved down as
+;; far as possible)
+;; TODO write functions for drawing the HUD (next piece, statistics?)
 
 (define-derived-mode retris-mode special-mode "Retris"
   "A XPM game."
