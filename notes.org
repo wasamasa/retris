@@ -1,0 +1,105 @@
+* Data structures
+
+- Two-dimensional array for the board consisting of "piece" chars
+- Alist of plists for the "pieces" with the seven piece chars and a
+  background char as key, the rest currently designate the tile chars
+  (and will hold the coordinates for the pieces, too), it's planned to
+  add the ghost and highlight chars later to it
+- Alist with chars as keys and two-dimensional array of pixel chars
+  for the tiles, it's planned to add a ghost and highlight tile later
+  to it
+- Alist with chars as keys and strings as values for the pixel to
+  color associations
+- Alist with color string as keys and hex codes as values for the
+  palette, it's planned to swap it out every ten levels
+
+* Rendering
+
+- I'm going for a XPM string as my canvas by exploiting the fact that
+  strings are mutable in elisp and treating them like arrays
+- XPM header always stays the same and can therefore stay hardcoded
+- XPM body needs to be initialized to a meaningful value at init, then
+  it can be manipulated with array operations
+- Both XPM header and body need to be combinated for rendering an
+  image, it is necessary to specify the desired palette before
+  creating the image with the =:color-symbols= property
+- Convenience functions for calculating the offset, peeking and poking
+  the XPM body string have been written, based on these a tile and
+  board rendering function got implemented
+- A preliminary benchmark revealed that drawing a tile is fast,
+  redrawing the board however isn't nearly fast enough to achieve
+  30fps (let alone 50fps or 60fps), it maxes out at 9fps for the
+  uncompiled version and 18fps for the compiled one
+- Therefore, two options emerge, switching to another rendering
+  approach and hoping for the best or redrawing as little as necessary
+- As it's likely that the latter will be required anyways, I'll keep
+  the rendering approach for now (adhering to it will give me a few
+  advantages such as not being limited to tile-exclusive motion) and
+  figure out how to redraw in a smarter way
+
+* HUD
+
+The original has piece statistics and the next piece, this will
+require extra tiles for text, maybe backgrounds as well.
+
+* Game mechanics
+
+I'm going to emulate the classic NES tetris variant as much as
+possible, then extend it for more novel ideas
+
+** Speed
+
+Assuming 60fps, one can compile the following speed curve:
+
+| Level | Frames |
+|-------+--------|
+|     0 |     48 |
+|     1 |     42 |
+|     2 |     38 |
+|     3 |     33 |
+|     4 |     28 |
+|     5 |     23 |
+|     6 |     18 |
+|     7 |     13 |
+|     8 |      8 |
+|     9 |      6 |
+|    10 |      5 |
+|    11 |      5 |
+|    12 |      5 |
+|    13 |      4 |
+|    14 |      4 |
+|    15 |      4 |
+|    16 |      3 |
+|    17 |      3 |
+|    18 |      3 |
+|   19+ |      2 |
+
+Source: http://www.tetrisconcept.net/wiki/Tetris_(NES,_Nintendo)
+
+- I won't bother with DAS and let the OS do autorepeat (after all, GNU
+  Emacs doesn't know about key down/up events, so that's not even
+  possible in the first place, Lucid Emacs and XEmacs however should)
+- If I'm going to implement ARE, it will be constant (10-18 frames)
+- Line clear delay will be constant (17-20 frames)
+
+** RNG
+
+It's hard to believe, but even this Tetris variant didn't have a
+completely dumb randomizer, so I'll try to do my best keeping it close
+to the original.
+
+** TODO Research
+
+- Soft Drop speed
+- Locking behaviour
+
+** Extensions
+
+- Ghost piece
+- Hold piece (swappable with next piece)
+- Extra gameplay modes (Ultra, Marathon, etc.)
+- More flexible gravity and locking behaviour, maybe even kicking (for
+  emulating TGM in normal and 20g mode)
+- Proper scoring
+- Theming
+- Swappable RNGs (see http://qntm.org/hatetris for a sadistic example)
