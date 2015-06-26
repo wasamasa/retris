@@ -37,6 +37,9 @@
     (?i :tile ?c)
     (?  :tile ?x)))
 
+(defun retris-tile-lookup (tile)
+  (plist-get (cdr (assoc tile retris-pieces)) :tile))
+
 (defvar retris-tiles
   '((?a . [[?^?a?a?a?a?a?a?.]
            [?a?^?^?a?a?a?a?.]
@@ -223,9 +226,7 @@ used for filling the lines with."
         (let ((old-tile (aref (aref retris-old-board y) x))
               (new-tile (aref (aref retris-board y) x)))
           (when (/= old-tile new-tile)
-            (push
-             (list x y (plist-get (cdr (assoc new-tile retris-pieces)) :tile))
-             coords)))))
+            (push (list x y (retris-tile-lookup new-tile)) coords)))))
     coords))
 
 (defun retris-redraw-board ()
