@@ -1,4 +1,5 @@
 (require 'dash)
+(require 'v)
 
 (defvar retris-board
   [[? ? ? ? ? ? ? ? ? ? ]
@@ -21,6 +22,9 @@
    [? ?l? ?i?j?z?z?i?s?s]
    [? ?l? ?i?j?z?l?i?t?s]
    [? ?l?l?i?l?l?l?t?t?t]])
+
+(defvar retris-old-board
+  (v-deep-copy retris-board))
 
 (defvar retris-pieces
   ;; TODO add coordinates
@@ -212,29 +216,38 @@ used for filling the lines with."
 
 (defvar retris-timer nil)
 
+(defun retris-diff-boards ()
+  (let (coords)
+    (dotimes (y retris-board-height)
+      (dotimes (x retris-board-width)
+        (let ((old-tile (aref (aref retris-old-board y) x))
+              (new-tile (aref (aref retris-board y) x)))
+          (when (/= old-tile new-tile)
+            (push
+             (list x y (plist-get (cdr (assoc new-tile retris-pieces)) :tile))
+             coords)))))
+    coords))
+
 (defun retris-redraw-board ()
-  (with-current-buffer "*retris*"
-    (retris-render-board retris-board-body retris-board-pixel-width 0 0
-                         retris-pieces retris-tiles retris-tile-size
-                         retris-scaling-factor retris-board)
-    (let ((inhibit-read-only t))
-      (erase-buffer)
-      (insert
-       (propertize " " 'display (create-image (concat retris-board-header
-                                                      retris-board-body)
-                                              'xpm t
-                                              :color-symbols retris-palette))
-       "\n"))))
+  (-when-let (coords (retris-diff-boards))
+    (dolist (item coords)
+      (-let [(x y tile) item]
+        (retris-render-tile retris-board-body retris-board-pixel-width
+                            (* retris-tile-size retris-scaling-factor x)
+                            (* retris-tile-size retris-scaling-factor y)
+                            retris-tiles retris-tile-size retris-scaling-factor
+                            tile)))
+    (setq retris-old-board (v-deep-copy retris-board))
+    (with-current-buffer "*retris*"
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert
+         (propertize " " 'display (create-image (concat retris-board-header
+                                                        retris-board-body)
+                                                'xpm t
+                                                :color-symbols retris-palette))
+         "\n")))))
 
-(benchmark 100 ; 0.05s/0.02s
-  '(retris-render-tile retris-board-body retris-board-pixel-width 0 0
-                    retris-tiles retris-tile-size retris-scaling-factor ?a))
-(benchmark 100 ; 10.85s/4.3s
-  '(retris-render-board retris-board-body retris-board-pixel-width 0 0
-                        retris-pieces retris-tiles retris-tile-size
-                        retris-scaling-factor retris-board))
-
-;; TODO redraw as little as possible
 ;; TODO write a function for drawing the initial board
 ;; TODO write a function for erasing and drawing a falling piece
 ;; TODO write a function for erasing and drawing a ghost piece
@@ -248,7 +261,7 @@ used for filling the lines with."
   "A XPM game."
   (buffer-disable-undo)
   (unless retris-timer
-    (setq retris-timer (run-at-time nil 0.05 'retris-redraw-board))))
+    (setq retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board))))
 
 (defun retris ()
   (interactive)
