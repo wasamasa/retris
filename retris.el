@@ -139,25 +139,6 @@ used for filling the lines with."
   (retris-generate-xpm-body retris-board-pixel-width
                             retris-board-pixel-height retris-filler))
 
-(defvar retris-preview-buffer-name "*retris preview*")
-
-(defun retris-preview-xpm (xpm-string palette)
-  "Display an image based on XPM-STRING in a preview buffer."
-  (with-current-buffer (get-buffer-create retris-preview-buffer-name)
-    (let ((inhibit-read-only t))
-      (erase-buffer)
-      (insert
-       (propertize " " 'display (create-image xpm-string 'xpm t
-                                              :color-symbols palette))
-       "\n")
-      (special-mode)))
-  (display-buffer retris-preview-buffer-name))
-
-(defun retris-preview ()
-  (interactive)
-  (-> (concat retris-board-header retris-board-body)
-      (retris-preview-xpm retris-palette)))
-
 ;; NOTE this doesn't check for out-of-bounds and is very naive
 (defun retris--xpm-body-offset (xpm-width x y)
   ;; NOTE the initial offset is one quote glyph, every line after that
