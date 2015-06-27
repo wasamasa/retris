@@ -218,6 +218,7 @@ used for filling the lines with."
 ;; TODO pass less variables around for more readability
 
 (defvar retris-timer nil)
+(defvar retris-dirty-p nil)
 
 (defun retris-diff-boards ()
   (let (coords)
@@ -230,15 +231,16 @@ used for filling the lines with."
     coords))
 
 (defun retris-redraw-board ()
-  (-when-let (coords (retris-diff-boards))
-    (dolist (item coords)
+  (when retris-dirty-p
+    (dolist (item (retris-diff-boards))
       (-let [(x y tile) item]
         (retris-render-tile retris-board-body retris-board-pixel-width
                             (* retris-tile-size retris-scaling-factor x)
                             (* retris-tile-size retris-scaling-factor y)
                             retris-tiles retris-tile-size retris-scaling-factor
                             tile)))
-    (setq retris-old-board (v-deep-copy retris-board))
+    (setq retris-old-board (v-deep-copy retris-board)
+          retris-dirty-p nil)
     (with-current-buffer "*retris*"
       (let ((inhibit-read-only t))
         (erase-buffer)
