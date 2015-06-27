@@ -218,6 +218,7 @@ used for filling the lines with."
 ;; TODO pass less variables around for more readability
 
 (defvar retris-timer nil)
+(defvar retris-playing-p t)
 (defvar retris-dirty-p nil)
 
 (defun retris-diff-boards ()
@@ -231,7 +232,7 @@ used for filling the lines with."
     coords))
 
 (defun retris-redraw-board ()
-  (when retris-dirty-p
+  (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
       (-let [(x y tile) item]
         (retris-render-tile retris-board-body retris-board-pixel-width
@@ -260,11 +261,17 @@ used for filling the lines with."
 ;; far as possible)
 ;; TODO write functions for drawing the HUD (next piece, statistics?)
 
+(defun retris-play-or-pause ()
+  (interactive)
+  (setq retris-playing-p (not retris-playing-p)))
+
 (define-derived-mode retris-mode special-mode "Retris"
   "A XPM game."
   (buffer-disable-undo)
   (unless retris-timer
     (setq retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board))))
+
+(define-key retris-mode-map (kbd "p") 'retris-play-or-pause)
 
 (defun retris ()
   (interactive)
