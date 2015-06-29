@@ -8,19 +8,19 @@
    [? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ?o?o? ? ? ? ]
-   [? ? ? ? ?o?o? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ?o?o]
-   [? ? ? ? ? ? ? ? ?o?o]
-   [? ? ? ? ? ? ? ?s?s?z]
-   [? ? ? ? ?t? ?s?s?z?z]
-   [? ? ? ? ?t?t?s?s?z?t]
-   [? ? ? ? ?t?s?s?i?t?t]
-   [? ? ? ?i?j?j?z?i?s?t]
-   [? ?l? ?i?j?z?z?i?s?s]
-   [? ?l? ?i?j?z?l?i?t?s]
-   [? ?l?l?i?l?l?l?t?t?t]])
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]
+   [? ? ? ? ? ? ? ? ? ? ]])
 
 (defvar retris-old-board
   (copy-tree retris-board t))
@@ -85,7 +85,17 @@
     ("dark"  . "#4240ff")
     ("black" . "#000000")))
 
-(defun retris-generate-xpm-header (width height colors)
+(defvar retris-board-width 10)
+(defvar retris-board-height 20)
+(defvar retris-tile-size 8)
+(defvar retris-scaling-factor 2)
+
+(defvar retris-board-pixel-width
+  (* retris-board-width retris-tile-size retris-scaling-factor))
+(defvar retris-board-pixel-height
+  (* retris-board-height retris-tile-size retris-scaling-factor))
+
+(defun retris-generate-xpm-header ()
   "Returns a string resembling a valid XPM header.
 WIDTH and HEIGHT should be self-explanatory, COLORS is an alist
 made up of a char used in the XPM body and a string for the
@@ -99,103 +109,52 @@ static char *graphic[] = {
 /* colors */
 %s/* pixels */
 "
-   width height
-   (length colors)
-   (apply 'concat (--map (format "\"%c s %s\",\n" (car it) (cdr it)) colors))))
+   retris-board-pixel-width
+   retris-board-pixel-height
+   (length retris-colors)
+   (apply 'concat (--map (format "\"%c s %s\",\n" (car it) (cdr it))
+                         retris-colors))))
 
-(retris-generate-xpm-header 8 8 retris-colors)
+(defvar retris-board-header (retris-generate-xpm-header))
 
 (defvar retris-filler (car (rassoc "black" retris-colors)))
 
-(defun retris-generate-xpm-body (width height filler)
+(defun retris-generate-xpm-body ()
   "Returns a string resembling a valid XPM body.
 WIDTH and HEIGHT should be self-explanatory, FILLER is a char
 used for filling the lines with."
   (concat
-   (->> (make-string width filler)
+   (->> (make-string retris-board-pixel-width retris-filler)
         (format "\"%s\",\n")
-        (make-list height)
+        (make-list retris-board-pixel-height)
         (apply 'concat))
    "}"))
 
-(retris-generate-xpm-body 8 8 retris-filler)
-
-(defvar retris-board-width 10)
-(defvar retris-board-height 20)
-(defvar retris-tile-size 8)
-(defvar retris-scaling-factor 2)
-
-(defvar retris-board-pixel-width
-  (* retris-board-width retris-tile-size retris-scaling-factor))
-(defvar retris-board-pixel-height
-  (* retris-board-height retris-tile-size retris-scaling-factor))
-
-(defvar retris-board-header
-  (retris-generate-xpm-header retris-board-pixel-width
-                              retris-board-pixel-height retris-colors))
-
-(defvar retris-board-body
-  (retris-generate-xpm-body retris-board-pixel-width
-                            retris-board-pixel-height retris-filler))
+(defvar retris-board-body (retris-generate-xpm-body))
 
 ;; NOTE this doesn't check for out-of-bounds and is very naive
-(defun retris--xpm-body-offset (xpm-width x y)
+(defsubst retris--xpm-body-offset (x y)
   ;; NOTE the initial offset is one quote glyph, every line after that
   ;; introduces three glyphs on the right and one of the left
-  (1+ (+ (* y (+ 4 xpm-width)) x)))
+  (1+ (+ (* y (+ 4 retris-board-pixel-width)) x)))
 
-(defsubst retris-xpm-peek (xpm-string xpm-width x y)
-  (aref xpm-string (retris--xpm-body-offset xpm-width x y)))
+(defsubst retris-xpm-peek (x y)
+  (aref retris-board-body (retris--xpm-body-offset x y)))
 
-(defsubst retris-xpm-poke (xpm-string xpm-width x y char)
-  (aset xpm-string (retris--xpm-body-offset xpm-width x y) char))
+(defsubst retris-xpm-poke (x y char)
+  (aset retris-board-body (retris--xpm-body-offset x y) char))
 
-(retris-xpm-poke retris-board-body retris-board-pixel-width 159 319 ?.)
-(retris-xpm-peek retris-board-body retris-board-pixel-width 159 319)
-(retris-xpm-poke retris-board-body retris-board-pixel-width 159 319 ?^)
-(retris-xpm-peek retris-board-body retris-board-pixel-width 159 319)
-
-(defun retris-render-tile (xpm-string xpm-width x-offset y-offset
-                                      tiles tile-size scale tile-char)
+(defun retris-render-tile (x-offset y-offset tile-char)
   ;; first, calculate the amount of rows and cols to work on
   ;; then look up the tile and do some magic to make upscaling work
-  (let ((width (* tile-size scale))
-        (height (* tile-size scale))
-        (tile-grid (cdr (assoc tile-char tiles))))
+  (let ((width (* retris-tile-size retris-scaling-factor))
+        (height (* retris-tile-size retris-scaling-factor))
+        (tile-grid (cdr (assoc tile-char retris-tiles))))
     (dotimes (y height)
       (dotimes (x width)
-        (retris-xpm-poke xpm-string xpm-width
-                         (+ x x-offset) (+ y y-offset)
-                         (aref (aref tile-grid (/ y scale))
-                               (/ x scale)))))))
-
-(retris-render-tile retris-board-body retris-board-pixel-width 0 0
-                    retris-tiles retris-tile-size retris-scaling-factor ?a)
-(retris-render-tile retris-board-body retris-board-pixel-width 16 0
-                    retris-tiles retris-tile-size retris-scaling-factor ?a)
-(retris-render-tile retris-board-body retris-board-pixel-width 32 0
-                    retris-tiles retris-tile-size retris-scaling-factor ?a)
-(retris-render-tile retris-board-body retris-board-pixel-width 16 16
-                    retris-tiles retris-tile-size retris-scaling-factor ?a)
-
-(defun retris-render-board (xpm-string xpm-width x-offset y-offset
-                                       pieces tiles tile-size scale board)
-  (let ((board-height (length board))
-        (board-width (length (aref board 0))))
-    (dotimes (y board-height)
-      (dotimes (x board-width)
-        (let* ((piece (aref (aref board y) x))
-               (tile (plist-get (cdr (assoc piece pieces)) :tile)))
-          (retris-render-tile xpm-string xpm-width
-                              (+ (* x tile-size scale) x-offset)
-                              (+ (* y tile-size scale) y-offset)
-                              tiles tile-size scale tile))))))
-
-(retris-render-board retris-board-body retris-board-pixel-width 0 0
-                     retris-pieces retris-tiles retris-tile-size
-                     retris-scaling-factor retris-board)
-
-;; TODO pass less variables around for more readability
+        (retris-xpm-poke (+ x x-offset) (+ y y-offset)
+                         (aref (aref tile-grid (/ y retris-scaling-factor))
+                               (/ x retris-scaling-factor)))))))
 
 (defvar retris-timer nil)
 (defvar retris-playing-p t)
@@ -215,10 +174,8 @@ used for filling the lines with."
   (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
       (-let [(x y tile) item]
-        (retris-render-tile retris-board-body retris-board-pixel-width
-                            (* retris-tile-size retris-scaling-factor x)
+        (retris-render-tile (* retris-tile-size retris-scaling-factor x)
                             (* retris-tile-size retris-scaling-factor y)
-                            retris-tiles retris-tile-size retris-scaling-factor
                             tile)))
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
