@@ -31,17 +31,17 @@
   "Alist of plists for piece chars.
 It currently holds the respective tile chars only."
   ;; TODO add coordinates
-  '((?t :tile ?c)
-    (?j :tile ?b)
-    (?z :tile ?a)
-    (?o :tile ?c)
-    (?s :tile ?b)
-    (?l :tile ?a)
-    (?i :tile ?c)
-    (?  :tile ?x)))
+  '((?t :tile-char ?c)
+    (?j :tile-char ?b)
+    (?z :tile-char ?a)
+    (?o :tile-char ?c)
+    (?s :tile-char ?b)
+    (?l :tile-char ?a)
+    (?i :tile-char ?c)
+    (?  :tile-char ?x)))
 
-(defun retris-tile-lookup (tile)
-  (plist-get (cdr (assoc tile retris-pieces)) :tile))
+(defun retris-tile-char-lookup (piece-char)
+  (plist-get (cdr (assoc piece-char retris-pieces)) :tile))
 
 (defvar retris-tiles
   "Alist of tile associations for tile chars."
@@ -171,7 +171,7 @@ to zero pixels."
   ;; then look up the tile and do some magic to make upscaling work
   (let ((width (* retris-tile-size retris-scaling-factor))
         (height (* retris-tile-size retris-scaling-factor))
-        (tile-grid (cdr (assoc tile-char retris-tiles)))
+        (tile (cdr (assoc tile-char retris-tiles)))
         (x-offset (+ (* x-ordinate retris-tile-size retris-scaling-factor)
                      (or x-offset 0)))
         (y-offset (+ (* y-ordinate retris-tile-size retris-scaling-factor)
@@ -179,7 +179,7 @@ to zero pixels."
     (dotimes (y height)
       (dotimes (x width)
         (retris-xpm-poke (+ x x-offset) (+ y y-offset)
-                         (aref (aref tile-grid (/ y retris-scaling-factor))
+                         (aref (aref tile (/ y retris-scaling-factor))
                                (/ x retris-scaling-factor)))))))
 
 (defvar retris-timer nil
@@ -193,14 +193,14 @@ When non-nil, a redraw of the changed parts is started.")
 (defun retris-diff-boards ()
   "Compare `retris-board' and `retris-old-board'.
 In case differences are detected, a list of changes is returned,
-each consisting of the x-ordinate, y-ordinate and tile."
+each consisting of the x-ordinate, y-ordinate and tile char."
   (let (coords)
     (dotimes (y retris-board-height)
       (dotimes (x retris-board-width)
-        (let ((old-tile (aref (aref retris-old-board y) x))
-              (new-tile (aref (aref retris-board y) x)))
-          (when (/= old-tile new-tile)
-            (push (list x y (retris-tile-lookup new-tile)) coords)))))
+        (let ((old-tile-char (aref (aref retris-old-board y) x))
+              (new-tile-char (aref (aref retris-board y) x)))
+          (when (/= old-tile-char new-tile-char)
+            (push (list x y (retris-tile-char-lookup new-tile-char)) coords)))))
     coords))
 
 (defun retris-redraw-board ()
@@ -211,8 +211,8 @@ drawing these, updating the state and updating the image in the
 Retris buffer."
   (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
-      (-let [(x y tile) item]
-        (retris-render-tile x y tile)))
+      (-let [(x y tile-char) item]
+        (retris-render-tile x y tile-char)))
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
