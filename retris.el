@@ -1,5 +1,4 @@
 (require 'dash)
-(require 'v)
 
 (defvar retris-board
   [[? ? ? ? ? ? ? ? ? ? ]
@@ -24,7 +23,7 @@
    [? ?l?l?i?l?l?l?t?t?t]])
 
 (defvar retris-old-board
-  (v-deep-copy retris-board))
+  (copy-tree retris-board t))
 
 (defvar retris-pieces
   ;; TODO add coordinates
@@ -221,7 +220,7 @@ used for filling the lines with."
                             (* retris-tile-size retris-scaling-factor y)
                             retris-tiles retris-tile-size retris-scaling-factor
                             tile)))
-    (setq retris-old-board (v-deep-copy retris-board)
+    (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
       (let ((inhibit-read-only t))
