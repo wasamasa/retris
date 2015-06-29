@@ -11,7 +11,7 @@
 - Alist with chars as keys and strings as values for the pixel to
   color associations
 - Alist with color string as keys and hex codes as values for the
-  palette, it's planned to swap it out every ten levels
+  palette, it's planned to swap it out each level or every ten lines.
 
 * Rendering
 
