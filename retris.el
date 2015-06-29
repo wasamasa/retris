@@ -144,12 +144,17 @@ used for filling the lines with."
 (defsubst retris-xpm-poke (x y char)
   (aset retris-board-body (retris--xpm-body-offset x y) char))
 
-(defun retris-render-tile (x-offset y-offset tile-char)
+(defun retris-render-tile (x-ordinate y-ordinate tile-char
+                                      &optional x-offset y-offset)
   ;; first, calculate the amount of rows and cols to work on
   ;; then look up the tile and do some magic to make upscaling work
   (let ((width (* retris-tile-size retris-scaling-factor))
         (height (* retris-tile-size retris-scaling-factor))
-        (tile-grid (cdr (assoc tile-char retris-tiles))))
+        (tile-grid (cdr (assoc tile-char retris-tiles)))
+        (x-offset (+ (* x-ordinate retris-tile-size retris-scaling-factor)
+                     (or x-offset 0)))
+        (y-offset (+ (* y-ordinate retris-tile-size retris-scaling-factor)
+                     (or y-offset 0))))
     (dotimes (y height)
       (dotimes (x width)
         (retris-xpm-poke (+ x x-offset) (+ y y-offset)
@@ -174,9 +179,7 @@ used for filling the lines with."
   (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
       (-let [(x y tile) item]
-        (retris-render-tile (* retris-tile-size retris-scaling-factor x)
-                            (* retris-tile-size retris-scaling-factor y)
-                            tile)))
+        (retris-render-tile x y tile)))
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
