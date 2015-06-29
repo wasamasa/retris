@@ -181,6 +181,7 @@ used for filling the lines with."
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
       (let ((inhibit-read-only t))
+        ;; TODO move point to end, disable region and clicking
         (erase-buffer)
         (insert
          (propertize " " 'display (create-image (concat retris-board-header
@@ -189,7 +190,6 @@ used for filling the lines with."
                                                 :color-symbols retris-palette))
          "\n")))))
 
-;; TODO write a function for drawing the initial board
 ;; TODO write a function for erasing and drawing a falling piece
 ;; TODO write a function for erasing and drawing a ghost piece
 ;; TODO write a function for flashing and erasing a cleared line
