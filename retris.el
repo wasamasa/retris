@@ -1,6 +1,7 @@
 (require 'dash)
 
 (defvar retris-board
+  "Board grid."
   [[? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
@@ -23,9 +24,12 @@
    [? ? ? ? ? ? ? ? ? ? ]])
 
 (defvar retris-old-board
+  "Previous snapshot of the board grid."
   (copy-tree retris-board t))
 
 (defvar retris-pieces
+  "Alist of plists for piece chars.
+It currently holds the respective tile chars only."
   ;; TODO add coordinates
   '((?t :tile ?c)
     (?j :tile ?b)
@@ -40,6 +44,7 @@
   (plist-get (cdr (assoc tile retris-pieces)) :tile))
 
 (defvar retris-tiles
+  "Alist of tile associations for tile chars."
   '((?a . [[?^?a?a?a?a?a?a?.]
            [?a?^?^?a?a?a?a?.]
            [?a?^?a?a?a?a?a?.]
@@ -74,32 +79,37 @@
            [?.?.?.?.?.?.?.?.]])))
 
 (defvar retris-colors
+  "Alist of color associations for tiles."
   '((?^ . "white")
     (?a . "light")
     (?b . "dark")
     (?. . "black")))
 
 (defvar retris-palette
+  "Default color palette for the XPM image."
   '(("white" . "#ffffff")
     ("light" . "#64b0ff")
     ("dark"  . "#4240ff")
     ("black" . "#000000")))
 
-(defvar retris-board-width 10)
-(defvar retris-board-height 20)
-(defvar retris-tile-size 8)
-(defvar retris-scaling-factor 2)
+(defvar retris-board-width 10
+  "Width of the board in tiles.")
+(defvar retris-board-height 20
+  "Height of the board in tiles.")
+(defvar retris-tile-size 8
+  "Size of each tile in pixels.")
+(defvar retris-scaling-factor 2
+  "Integer scaling factor of the tiles.")
 
 (defvar retris-board-pixel-width
-  (* retris-board-width retris-tile-size retris-scaling-factor))
+  (* retris-board-width retris-tile-size retris-scaling-factor)
+  "Width of the board image in pixels.")
 (defvar retris-board-pixel-height
-  (* retris-board-height retris-tile-size retris-scaling-factor))
+  (* retris-board-height retris-tile-size retris-scaling-factor)
+  "Height of the board image in pixels.")
 
 (defun retris-generate-xpm-header ()
-  "Returns a string resembling a valid XPM header.
-WIDTH and HEIGHT should be self-explanatory, COLORS is an alist
-made up of a char used in the XPM body and a string for the
-symbolic name used by the palette for rendering an image."
+  "Returns a string resembling a valid XPM header."
   (format
    ;; NOTE the first comment is mandatory
    "/* XPM */
@@ -115,14 +125,14 @@ static char *graphic[] = {
    (apply 'concat (--map (format "\"%c s %s\",\n" (car it) (cdr it))
                          retris-colors))))
 
-(defvar retris-board-header (retris-generate-xpm-header))
+(defvar retris-board-header (retris-generate-xpm-header)
+  "XPM header of the board image.")
 
-(defvar retris-filler (car (rassoc "black" retris-colors)))
+(defvar retris-filler (car (rassoc "black" retris-colors))
+  "Filler char used for the empty board.")
 
 (defun retris-generate-xpm-body ()
-  "Returns a string resembling a valid XPM body.
-WIDTH and HEIGHT should be self-explanatory, FILLER is a char
-used for filling the lines with."
+  "Returns a string resembling a valid XPM body."
   (concat
    (->> (make-string retris-board-pixel-width retris-filler)
         (format "\"%s\",\n")
@@ -130,22 +140,33 @@ used for filling the lines with."
         (apply 'concat))
    "}"))
 
-(defvar retris-board-body (retris-generate-xpm-body))
+(defvar retris-board-body (retris-generate-xpm-body)
+  "XPM body of the board image.")
 
 ;; NOTE this doesn't check for out-of-bounds and is very naive
 (defsubst retris--xpm-body-offset (x y)
+  "Calculate the correct XPM offset for char operations.
+X and Y are pixel ordinates."
   ;; NOTE the initial offset is one quote glyph, every line after that
   ;; introduces three glyphs on the right and one of the left
   (1+ (+ (* y (+ 4 retris-board-pixel-width)) x)))
 
 (defsubst retris-xpm-peek (x y)
+  "Extract a XPM character from the image.
+X and Y are pixel ordinates."
   (aref retris-board-body (retris--xpm-body-offset x y)))
 
 (defsubst retris-xpm-poke (x y char)
+  "Set a XPM character from the image to CHAR.
+X and Y are pixel ordinates."
   (aset retris-board-body (retris--xpm-body-offset x y) char))
 
 (defun retris-render-tile (x-ordinate y-ordinate tile-char
                                       &optional x-offset y-offset)
+  "Draw a a tile TILE-CHAR.
+X-ORDINATE and Y-ORDINATE take grid ordinates.  X-OFFSET and
+Y-OFFSET can be used to shift the respective offsets and default
+to zero pixels."
   ;; first, calculate the amount of rows and cols to work on
   ;; then look up the tile and do some magic to make upscaling work
   (let ((width (* retris-tile-size retris-scaling-factor))
@@ -161,11 +182,18 @@ used for filling the lines with."
                          (aref (aref tile-grid (/ y retris-scaling-factor))
                                (/ x retris-scaling-factor)))))))
 
-(defvar retris-timer nil)
-(defvar retris-playing-p t)
-(defvar retris-dirty-p t)
+(defvar retris-timer nil
+  "Holds the game timer.")
+(defvar retris-playing-p t
+  "Play/pause state.")
+(defvar retris-dirty-p t
+  "Dirty flag for drawing.
+When non-nil, a redraw of the changed parts is started.")
 
 (defun retris-diff-boards ()
+  "Compare `retris-board' and `retris-old-board'.
+In case differences are detected, a list of changes is returned,
+each consisting of the x-ordinate, y-ordinate and tile."
   (let (coords)
     (dotimes (y retris-board-height)
       (dotimes (x retris-board-width)
@@ -176,6 +204,11 @@ used for filling the lines with."
     coords))
 
 (defun retris-redraw-board ()
+  "Redrawing function for `retris-timer'.
+When `retris-dirty-p' and `retris-playing-p' are set, a redraw is
+initiated by looking for differences with `retris-diff-boards',
+drawing these, updating the state and updating the image in the
+Retris buffer."
   (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
       (-let [(x y tile) item]
@@ -202,6 +235,7 @@ used for filling the lines with."
 ;; TODO write functions for drawing the HUD (next piece, statistics?)
 
 (defun retris-play-or-pause ()
+  "Toggle play/pause state."
   (interactive)
   (setq retris-playing-p (not retris-playing-p)))
 
@@ -214,6 +248,7 @@ used for filling the lines with."
 (define-key retris-mode-map (kbd "p") 'retris-play-or-pause)
 
 (defun retris ()
+  "Start a game of Retris!"
   (interactive)
   (with-current-buffer (get-buffer-create "*retris*")
     (retris-mode))
