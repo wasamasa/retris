@@ -158,7 +158,7 @@ used for filling the lines with."
 
 (defvar retris-timer nil)
 (defvar retris-playing-p t)
-(defvar retris-dirty-p nil)
+(defvar retris-dirty-p t)
 
 (defun retris-diff-boards ()
   (let (coords)
