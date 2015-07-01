@@ -1,7 +1,6 @@
 (require 'dash)
 
 (defvar retris-board
-  "Board grid."
   [[? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
@@ -21,15 +20,14 @@
    [? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]])
+   [? ? ? ? ? ? ? ? ? ? ]]
+  "Board grid.")
 
 (defvar retris-old-board
-  "Previous snapshot of the board grid."
-  (copy-tree retris-board t))
+  (copy-tree retris-board t)
+  "Previous snapshot of the board grid.")
 
 (defvar retris-pieces
-  "Alist of plists for piece chars.
-It currently holds the respective tile chars only."
   ;; TODO add coordinates
   '((?t :tile-char ?c)
     (?j :tile-char ?b)
@@ -38,13 +36,15 @@ It currently holds the respective tile chars only."
     (?s :tile-char ?b)
     (?l :tile-char ?a)
     (?i :tile-char ?c)
-    (?  :tile-char ?x)))
+    (?  :tile-char ?x))
+  "Alist of plists for piece chars.
+It currently holds the respective tile chars only.")
 
 (defun retris-tile-char-lookup (piece-char)
-  (plist-get (cdr (assoc piece-char retris-pieces)) :tile))
+  "Associate PIECE-CHAR with the respective tile char."
+  (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
 (defvar retris-tiles
-  "Alist of tile associations for tile chars."
   '((?a . [[?^?a?a?a?a?a?a?.]
            [?a?^?^?a?a?a?a?.]
            [?a?^?a?a?a?a?a?.]
@@ -76,21 +76,22 @@ It currently holds the respective tile chars only."
            [?.?.?.?.?.?.?.?.]
            [?.?.?.?.?.?.?.?.]
            [?.?.?.?.?.?.?.?.]
-           [?.?.?.?.?.?.?.?.]])))
+           [?.?.?.?.?.?.?.?.]]))
+  "Alist of tile associations for tile chars.")
 
 (defvar retris-colors
-  "Alist of color associations for tiles."
   '((?^ . "white")
     (?a . "light")
     (?b . "dark")
-    (?. . "black")))
+    (?. . "black"))
+  "Alist of color associations for tiles.")
 
 (defvar retris-palette
-  "Default color palette for the XPM image."
   '(("white" . "#ffffff")
     ("light" . "#64b0ff")
     ("dark"  . "#4240ff")
-    ("black" . "#000000")))
+    ("black" . "#000000"))
+  "Default color palette for the XPM image.")
 
 (defvar retris-board-width 10
   "Width of the board in tiles.")
