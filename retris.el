@@ -65,7 +65,7 @@
   (copy-tree retris-board t)
   "Previous snapshot of the board grid.")
 
-(defvar retris-pieces
+(defconst retris-pieces
   ;; TODO add coordinates
   '((?t :tile-char ?c)
     (?j :tile-char ?b)
@@ -82,7 +82,7 @@ It currently holds the respective tile chars only.")
   "Associate PIECE-CHAR with the respective tile char."
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
-(defvar retris-tiles
+(defconst retris-tiles
   '((?a . [[?^?a?a?a?a?a?a?.]
            [?a?^?^?a?a?a?a?.]
            [?a?^?a?a?a?a?a?.]
@@ -117,14 +117,14 @@ It currently holds the respective tile chars only.")
            [?.?.?.?.?.?.?.?.]]))
   "Alist of tile associations for tile chars.")
 
-(defvar retris-colors
+(defconst retris-colors
   '((?^ . "white")
     (?a . "light")
     (?b . "dark")
     (?. . "black"))
   "Alist of color associations for tiles.")
 
-(defvar retris-palette
+(defconst retris-palette
   '(("white" . "#ffffff")
     ("light" . "#64b0ff")
     ("dark"  . "#4240ff")
