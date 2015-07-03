@@ -1,3 +1,38 @@
+;;; retris.el --- Retro Tetris
+
+;; Copyright (C) 2015 Vasilij Schneidermann <v.schneidermann@gmail.com>
+
+;; Author: Vasilij Schneidermann <v.schneidermann@gmail.com>
+;; URL: https://github.com/wasamasa/retris
+;; Version: 0.0.1
+;; Package-Requires: ((dash "2.11.0"))
+;; Keywords: games
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2, or (at your option)
+;; any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING. If not, write to
+;; the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+;;; Commentary:
+
+;; Here's a better Tetris game than the one Emacs comes with.  The
+;; goal of this demonstration is to test how far one can go with XPM
+;; graphics and what limitations you're bound to run into.
+
+;;; Code:
+
 (require 'dash)
 
 (defvar retris-board
@@ -255,3 +290,6 @@ Retris buffer."
   (with-current-buffer (get-buffer-create "*retris*")
     (retris-mode))
   (display-buffer "*retris*"))
+
+(provide 'retris)
+;;; retris.el ends here
