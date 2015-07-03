@@ -35,6 +35,9 @@
 
 (require 'dash)
 
+
+;; variables
+
 (defvar retris-board
   [[? ? ? ? ? ? ? ? ? ? ]
    [? ? ? ? ? ? ? ? ? ? ]
@@ -179,6 +182,9 @@ static char *graphic[] = {
 (defvar retris-board-body (retris-generate-xpm-body)
   "XPM body of the board image.")
 
+
+;; rendering
+
 ;; NOTE this doesn't check for out-of-bounds and is very naive
 (defsubst retris--xpm-body-offset (x y)
   "Calculate the correct XPM offset for char operations.
@@ -270,6 +276,12 @@ Retris buffer."
 ;; erase it completely, then redraw it with every line moved down as
 ;; far as possible)
 ;; TODO write functions for drawing the HUD (next piece, statistics?)
+
+
+;; board manipulation
+
+
+;; frontend
 
 (defun retris-play-or-pause ()
   "Toggle play/pause state."
