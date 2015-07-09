@@ -82,6 +82,9 @@
   "Associate PIECE-CHAR with the respective tile char."
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
+(defun retris-coordinates-lookup (piece-char)
+  (plist-get (cdr (assoc piece-char retris-pieces)) :coordinates))
+
 (defconst retris-tiles
   '((?a . [[?^?a?a?a?a?a?a?.]
            [?a?^?^?a?a?a?a?.]
@@ -280,6 +283,55 @@ Retris buffer."
 
 ;; board manipulation
 
+(defconst retris-board-insertion-coordinate [4 0])
+(defvar retris-board-current-piece-coordinate [4 0])
+(defvar retris-board-current-piece-char ?t)
+
+(defun retris-fill-piece (x y piece-char &optional erase)
+  "Commit a piece to the board.
+X and Y are the insertion coordinates, PIECE-CHAR is used to look
+up the piece, If ERASE is non-nil, the coordinates of the given
+piece are blanked out instead."
+  (let ((coordinates (retris-coordinates-lookup piece-char)))
+    (dotimes (i (length coordinates))
+      (let ((x (+ (aref (aref coordinates i) 0) x))
+            (y (+ (aref (aref coordinates i) 1) y)))
+        (aset (aref retris-board y) x (if erase ?\s piece-char))))))
+
+(defun retris-draw-current-piece ()
+  "Draw the current piece to the board."
+  (retris-fill-piece (aref retris-board-current-piece-coordinate 0)
+                     (aref retris-board-current-piece-coordinate 1)
+                     retris-board-current-piece-char))
+
+(defun retris-erase-current-piece ()
+  "Erase the current piece from the board."
+  (retris-fill-piece (aref retris-board-current-piece-coordinate 0)
+                     (aref retris-board-current-piece-coordinate 1)
+                     retris-board-current-piece-char t))
+
+(defun retris-board-insert-piece ()
+  "Insert the current piece at the top of the board"
+  (interactive)
+  (retris-fill-piece (aref retris-board-insertion-coordinate 0)
+                     (aref retris-board-insertion-coordinate 1)
+                     retris-board-current-piece-char)
+  (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
+        retris-dirty-p t))
+
+;; TODO write a collision check
+(defun retris-board-move-piece-down ()
+  "Move the current piece down.
+Does currently not check for collisions yet and will therefore
+fail when attempting to move the piece beyond the board."
+  (interactive)
+  (retris-erase-current-piece)
+  (setq retris-board-current-piece-coordinate
+        (vector (aref retris-board-current-piece-coordinate 0)
+                (1+ (aref retris-board-current-piece-coordinate 1))))
+  (retris-draw-current-piece)
+  (setq retris-dirty-p t))
+
 
 ;; frontend
 
@@ -295,6 +347,8 @@ Retris buffer."
     (setq retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board))))
 
 (define-key retris-mode-map (kbd "p") 'retris-play-or-pause)
+(define-key retris-mode-map (kbd "i") 'retris-board-insert-piece)
+(define-key retris-mode-map (kbd "j") 'retris-board-move-piece-down)
 
 (defun retris ()
   "Start a game of Retris!"
