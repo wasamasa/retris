@@ -66,17 +66,17 @@
   "Previous snapshot of the board grid.")
 
 (defconst retris-pieces
-  ;; TODO add coordinates
-  '((?t :tile-char ?c)
-    (?j :tile-char ?b)
-    (?z :tile-char ?a)
-    (?o :tile-char ?c)
-    (?s :tile-char ?b)
-    (?l :tile-char ?a)
-    (?i :tile-char ?c)
-    (?  :tile-char ?x))
-  "Alist of plists for piece chars.
-It currently holds the respective tile chars only.")
+  ;; TODO add flash
+  ;; TODO add ghost piece
+  '((?t  :tile-char ?c :coordinates [[ 0 0] [1 0] [2 0] [1 1]])
+    (?j  :tile-char ?b :coordinates [[ 0 0] [1 0] [2 0] [2 1]])
+    (?z  :tile-char ?a :coordinates [[ 0 0] [1 0] [1 1] [2 1]])
+    (?o  :tile-char ?c :coordinates [[ 0 0] [1 0] [0 1] [1 1]])
+    (?s  :tile-char ?b :coordinates [[ 1 0] [2 0] [0 1] [1 1]])
+    (?l  :tile-char ?a :coordinates [[ 0 0] [1 0] [2 0] [0 1]])
+    (?i  :tile-char ?c :coordinates [[-1 0] [0 0] [1 0] [2 0]])
+    (?\s :tile-char ?x))
+  "Alist of plists for piece chars.")
 
 (defun retris-tile-char-lookup (piece-char)
   "Associate PIECE-CHAR with the respective tile char."
