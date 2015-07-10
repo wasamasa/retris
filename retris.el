@@ -316,7 +316,18 @@ given piece are blanked out instead."
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-dirty-p t))
 
-;; TODO write an out of bounds check
+(defun retris-board-coordinate-out-of-bounds-p (xy)
+  "Non-nil if the XY coordinate is outside the board."
+  (or (< (aref xy 0) 0)
+      (>= (aref xy 0) retris-board-width)
+      (< (aref xy 1) 0)
+      (>= (aref xy 1) retris-board-height)))
+
+(defun retris-board-coordinates-out-of-bounds-p (coordinates)
+  "Non-nil if any of the COORDINATES is outside the board."
+  (-any? 'retris-board-coordinate-out-of-bounds-p
+         (append coordinates nil)))
+
 ;; TODO write a collision check
 (defun retris-board-move-piece-down ()
   "Move the current piece down.
