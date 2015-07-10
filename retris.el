@@ -326,9 +326,22 @@ given piece are blanked out instead."
 (defun retris-board-coordinates-out-of-bounds-p (coordinates)
   "Non-nil if any of the COORDINATES is outside the board."
   (-any? 'retris-board-coordinate-out-of-bounds-p
+         ;; turn the coordinates vector into a list
          (append coordinates nil)))
 
-;; TODO write a collision check
+(defun retris-board-coordinate-free-p (xy)
+  "Non-nil if the XY coordinate is free on the board."
+  (= (aref (aref retris-board (aref xy 1)) (aref xy 0))
+     ?\s))
+
+(defun retris-board-coordinates-free-p (coordinates)
+  "Non-nil if all COORDINATES are free on the board."
+  (-all? 'retris-board-coordinate-free-p
+         (append coordinates nil)))
+
+;; NOTE better calculate future coordinates, check whether they're ok,
+;; move into calculated direction (and pass the coordinates to the
+;; drawing function?)
 (defun retris-board-move-piece-down ()
   "Move the current piece down.
 Does currently not check for collisions yet and will therefore
