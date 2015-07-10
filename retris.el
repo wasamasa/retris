@@ -287,38 +287,36 @@ Retris buffer."
 (defvar retris-board-current-piece-coordinate [4 0])
 (defvar retris-board-current-piece-char ?t)
 
-(defun retris-fill-piece (x y piece-char &optional erase)
+(defun retris-fill-piece (xy piece-char &optional erase)
   "Commit a piece to the board.
-X and Y are the insertion coordinates, PIECE-CHAR is used to look
-up the piece, If ERASE is non-nil, the coordinates of the given
-piece are blanked out instead."
+XY is the insertion coordinate vector, PIECE-CHAR is used to
+look up the piece, If ERASE is non-nil, the coordinates of the
+given piece are blanked out instead."
   (let ((coordinates (retris-coordinates-lookup piece-char)))
     (dotimes (i (length coordinates))
-      (let ((x (+ (aref (aref coordinates i) 0) x))
-            (y (+ (aref (aref coordinates i) 1) y)))
+      (let ((x (+ (aref (aref coordinates i) 0) (aref xy 0)))
+            (y (+ (aref (aref coordinates i) 1) (aref xy 1))))
         (aset (aref retris-board y) x (if erase ?\s piece-char))))))
 
 (defun retris-draw-current-piece ()
   "Draw the current piece to the board."
-  (retris-fill-piece (aref retris-board-current-piece-coordinate 0)
-                     (aref retris-board-current-piece-coordinate 1)
+  (retris-fill-piece retris-board-current-piece-coordinate
                      retris-board-current-piece-char))
 
 (defun retris-erase-current-piece ()
   "Erase the current piece from the board."
-  (retris-fill-piece (aref retris-board-current-piece-coordinate 0)
-                     (aref retris-board-current-piece-coordinate 1)
+  (retris-fill-piece retris-board-current-piece-coordinate
                      retris-board-current-piece-char t))
 
 (defun retris-board-insert-piece ()
   "Insert the current piece at the top of the board"
   (interactive)
-  (retris-fill-piece (aref retris-board-insertion-coordinate 0)
-                     (aref retris-board-insertion-coordinate 1)
+  (retris-fill-piece retris-board-insertion-coordinate
                      retris-board-current-piece-char)
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-dirty-p t))
 
+;; TODO write an out of bounds check
 ;; TODO write a collision check
 (defun retris-board-move-piece-down ()
   "Move the current piece down.
