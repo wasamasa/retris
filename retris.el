@@ -283,6 +283,39 @@ Retris buffer."
 
 ;; board manipulation
 
+(defun retris-board-coordinate-out-of-bounds-p (xy)
+  "Non-nil if the XY coordinate is outside the board."
+  (or (< (aref xy 0) 0)
+      (>= (aref xy 0) retris-board-width)
+      (< (aref xy 1) 0)
+      (>= (aref xy 1) retris-board-height)))
+
+(defun retris-board-coordinates-out-of-bounds-p (coordinates)
+  "Non-nil if any of the COORDINATES is outside the board."
+  (-any? 'retris-board-coordinate-out-of-bounds-p
+         ;; turn the coordinates vector into a list
+         (append coordinates nil)))
+
+(defun retris-board-coordinate-free-p (xy)
+  "Non-nil if the XY coordinate is free on the board."
+  (= (aref (aref retris-board (aref xy 1)) (aref xy 0))
+     ?\s))
+
+(defun retris-board-coordinates-free-p (coordinates)
+  "Non-nil if all COORDINATES are free on the board."
+  (-all? 'retris-board-coordinate-free-p
+         (append coordinates nil)))
+
+(defun retris-add-to-coordinates (coordinates coordinate)
+  "Add COORDINATE to all COORDINATES."
+  (let (result)
+    (dotimes (i (length coordinates))
+      (let* ((xy (aref coordinates i))
+             (x (+ (aref xy 0) (aref coordinate 0)))
+             (y (+ (aref xy 1) (aref coordinate 1))))
+        (push (vector x y) result)))
+    (vconcat (nreverse result))))
+
 (defconst retris-board-insertion-coordinate [4 0])
 (defvar retris-board-current-piece-coordinate [4 0])
 (defvar retris-board-current-piece-char ?t)
@@ -316,43 +349,25 @@ given piece are blanked out instead."
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-dirty-p t))
 
-(defun retris-board-coordinate-out-of-bounds-p (xy)
-  "Non-nil if the XY coordinate is outside the board."
-  (or (< (aref xy 0) 0)
-      (>= (aref xy 0) retris-board-width)
-      (< (aref xy 1) 0)
-      (>= (aref xy 1) retris-board-height)))
-
-(defun retris-board-coordinates-out-of-bounds-p (coordinates)
-  "Non-nil if any of the COORDINATES is outside the board."
-  (-any? 'retris-board-coordinate-out-of-bounds-p
-         ;; turn the coordinates vector into a list
-         (append coordinates nil)))
-
-(defun retris-board-coordinate-free-p (xy)
-  "Non-nil if the XY coordinate is free on the board."
-  (= (aref (aref retris-board (aref xy 1)) (aref xy 0))
-     ?\s))
-
-(defun retris-board-coordinates-free-p (coordinates)
-  "Non-nil if all COORDINATES are free on the board."
-  (-all? 'retris-board-coordinate-free-p
-         (append coordinates nil)))
-
-;; NOTE better calculate future coordinates, check whether they're ok,
-;; move into calculated direction (and pass the coordinates to the
-;; drawing function?)
+;; NOTE perhaps rewrite stuff to pass calculated coordinates on
 (defun retris-board-move-piece-down ()
   "Move the current piece down.
 Does currently not check for collisions yet and will therefore
 fail when attempting to move the piece beyond the board."
   (interactive)
   (retris-erase-current-piece)
-  (setq retris-board-current-piece-coordinate
-        (vector (aref retris-board-current-piece-coordinate 0)
-                (1+ (aref retris-board-current-piece-coordinate 1))))
-  (retris-draw-current-piece)
-  (setq retris-dirty-p t))
+  (let* ((old-coordinates
+          (retris-add-to-coordinates (retris-coordinates-lookup
+                                      retris-board-current-piece-char)
+                                     retris-board-current-piece-coordinate))
+         (new-coordinates (retris-add-to-coordinates old-coordinates [0 1])))
+    (when (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
+             (retris-board-coordinates-free-p new-coordinates))
+      (setq retris-board-current-piece-coordinate
+            (vector (aref retris-board-current-piece-coordinate 0)
+                    (1+ (aref retris-board-current-piece-coordinate 1)))))
+    (retris-draw-current-piece)
+    (setq retris-dirty-p t)))
 
 
 ;; frontend
