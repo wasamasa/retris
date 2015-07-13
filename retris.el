@@ -307,14 +307,18 @@ Retris buffer."
          (append coordinates nil)))
 
 (defun retris-add-to-coordinates (coordinates coordinate)
-  "Add COORDINATE to all COORDINATES."
-  (let (result)
-    (dotimes (i (length coordinates))
+  "Add COORDINATE to all COORDINATES.
+Return a vector of altered coordinates."
+  (let* ((size (length coordinates))
+         (i 0)
+         (result (make-vector size nil)))
+    (while (< i size)
       (let* ((xy (aref coordinates i))
              (x (+ (aref xy 0) (aref coordinate 0)))
              (y (+ (aref xy 1) (aref coordinate 1))))
-        (push (vector x y) result)))
-    (vconcat (nreverse result))))
+        (aset result i (vector x y))
+        (setq i (1+ i))))
+    result))
 
 (defconst retris-board-insertion-coordinate [4 0])
 (defvar retris-board-current-piece-coordinate [4 0])
