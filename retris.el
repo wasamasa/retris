@@ -305,6 +305,13 @@ Return a vector of altered coordinates."
         (setq i (1+ i))))
     result))
 
+(defun retris-board-set-coordinates (coordinates filler)
+  "Set specified COORDINATES to FILLER on the board."
+  (dotimes (i (length coordinates))
+    (let ((xy (aref coordinates i)))
+      (aset (aref retris-board (aref xy 1))
+            (aref xy 0) filler))))
+
 (defconst retris-board-insertion-coordinate [4 0])
 (defvar retris-board-current-piece-coordinate nil)
 (defvar retris-board-current-piece-char ?t)
@@ -338,24 +345,25 @@ given piece are blanked out instead."
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-dirty-p t))
 
-;; NOTE perhaps rewrite stuff to pass calculated coordinates on
 (defun retris-board-move-piece-down ()
-  "Move the current piece down.
-Does currently not check for collisions yet and will therefore
-fail when attempting to move the piece beyond the board."
+  "Move the current piece down."
   (interactive)
-  (retris-erase-current-piece)
   (let* ((old-coordinates
           (retris-add-to-coordinates (retris-coordinates-lookup
                                       retris-board-current-piece-char)
                                      retris-board-current-piece-coordinate))
          (new-coordinates (retris-add-to-coordinates old-coordinates [0 1])))
-    (when (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
+    (retris-board-set-coordinates old-coordinates ?\s)
+    (if (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
              (retris-board-coordinates-free-p new-coordinates))
-      (setq retris-board-current-piece-coordinate
-            (vector (aref retris-board-current-piece-coordinate 0)
-                    (1+ (aref retris-board-current-piece-coordinate 1)))))
-    (retris-draw-current-piece)
+        (progn
+          (setq retris-board-current-piece-coordinate
+                (vector (aref retris-board-current-piece-coordinate 0)
+                        (1+ (aref retris-board-current-piece-coordinate 1))))
+          (retris-board-set-coordinates new-coordinates
+                                        retris-board-current-piece-char))
+      (retris-board-set-coordinates old-coordinates
+                                    retris-board-current-piece-char))
     (setq retris-dirty-p t)))
 
 
