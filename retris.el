@@ -38,31 +38,10 @@
 
 ;; variables
 
-(defvar retris-board
-  [[? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]
-   [? ? ? ? ? ? ? ? ? ? ]]
+(defvar retris-board nil
   "Board grid.")
 
-(defvar retris-old-board
-  (copy-tree retris-board t)
+(defvar retris-old-board nil
   "Previous snapshot of the board grid.")
 
 (defconst retris-pieces
@@ -231,7 +210,7 @@ to zero pixels."
   "Holds the game timer.")
 (defvar retris-playing-p t
   "Play/pause state.")
-(defvar retris-dirty-p t
+(defvar retris-dirty-p nil
   "Dirty flag for drawing.
 When non-nil, a redraw of the changed parts is started.")
 
@@ -283,6 +262,12 @@ Retris buffer."
 
 ;; board manipulation
 
+(defun retris-empty-board ()
+  (let ((board (make-vector retris-board-height nil)))
+    (dotimes (i retris-board-height)
+      (aset board i (make-vector retris-board-width ?\s)))
+    board))
+
 (defun retris-board-coordinate-out-of-bounds-p (xy)
   "Non-nil if the XY coordinate is outside the board."
   (or (< (aref xy 0) 0)
@@ -321,7 +306,7 @@ Return a vector of altered coordinates."
     result))
 
 (defconst retris-board-insertion-coordinate [4 0])
-(defvar retris-board-current-piece-coordinate [4 0])
+(defvar retris-board-current-piece-coordinate nil)
 (defvar retris-board-current-piece-char ?t)
 
 (defun retris-fill-piece (xy piece-char &optional erase)
@@ -376,6 +361,17 @@ fail when attempting to move the piece beyond the board."
 
 ;; frontend
 
+(defun retris-reset ()
+  "Reset the game to its initial state."
+  (interactive)
+  (when retris-timer
+    (cancel-timer retris-timer))
+  (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
+        retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board)
+        retris-board (retris-empty-board)
+        retris-playing-p t
+        retris-dirty-p t))
+
 (defun retris-play-or-pause ()
   "Toggle play/pause state."
   (interactive)
@@ -384,10 +380,10 @@ fail when attempting to move the piece beyond the board."
 (define-derived-mode retris-mode special-mode "Retris"
   "A XPM game."
   (buffer-disable-undo)
-  (unless retris-timer
-    (setq retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board))))
+  (retris-reset))
 
 (define-key retris-mode-map (kbd "p") 'retris-play-or-pause)
+(define-key retris-mode-map (kbd "g") 'retris-reset)
 (define-key retris-mode-map (kbd "i") 'retris-board-insert-piece)
 (define-key retris-mode-map (kbd "j") 'retris-board-move-piece-down)
 
