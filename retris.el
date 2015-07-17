@@ -374,6 +374,8 @@ given piece are blanked out instead."
   (interactive)
   (when retris-timer
     (cancel-timer retris-timer))
+  (unless retris-old-board
+    (setq retris-old-board (retris-empty-board)))
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board)
         retris-board (retris-empty-board)
