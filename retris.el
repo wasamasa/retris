@@ -291,18 +291,20 @@ Retris buffer."
   (-all? 'retris-board-coordinate-free-p
          (append coordinates nil)))
 
-(defun retris-add-to-coordinates (coordinates coordinate)
-  "Add COORDINATE to all COORDINATES.
+(defun retris-add-to-coordinate (coordinate vector)
+  "Add VECTOR to COORDINATE."
+  (vector (+ (aref coordinate 0) (aref vector 0))
+          (+ (aref coordinate 1) (aref vector 1))))
+
+(defun retris-add-to-coordinates (coordinates vector)
+  "Add VECTOR to all COORDINATES.
 Return a vector of altered coordinates."
   (let* ((size (length coordinates))
          (i 0)
          (result (make-vector size nil)))
     (while (< i size)
-      (let* ((xy (aref coordinates i))
-             (x (+ (aref xy 0) (aref coordinate 0)))
-             (y (+ (aref xy 1) (aref coordinate 1))))
-        (aset result i (vector x y))
-        (setq i (1+ i))))
+      (aset result i (retris-add-to-coordinate (aref coordinates i) vector))
+      (setq i (1+ i)))
     result))
 
 (defun retris-board-set-coordinates (coordinates filler)
