@@ -347,26 +347,40 @@ given piece are blanked out instead."
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-dirty-p t))
 
-(defun retris-board-move-piece-down ()
-  "Move the current piece down."
-  (interactive)
+(defun retris-board-move-piece (vector)
+  "Move the current piece by VECTOR."
   (let* ((old-coordinates
           (retris-add-to-coordinates (retris-coordinates-lookup
                                       retris-board-current-piece-char)
                                      retris-board-current-piece-coordinate))
-         (new-coordinates (retris-add-to-coordinates old-coordinates [0 1])))
+         (new-coordinates (retris-add-to-coordinates old-coordinates vector)))
     (retris-board-set-coordinates old-coordinates ?\s)
     (if (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
              (retris-board-coordinates-free-p new-coordinates))
         (progn
           (setq retris-board-current-piece-coordinate
-                (vector (aref retris-board-current-piece-coordinate 0)
-                        (1+ (aref retris-board-current-piece-coordinate 1))))
+                (retris-add-to-coordinate retris-board-current-piece-coordinate
+                                          vector))
           (retris-board-set-coordinates new-coordinates
                                         retris-board-current-piece-char))
       (retris-board-set-coordinates old-coordinates
                                     retris-board-current-piece-char))
     (setq retris-dirty-p t)))
+
+(defun retris-board-move-piece-down ()
+  "Move the current piece down."
+  (interactive)
+  (retris-board-move-piece [0 1]))
+
+(defun retris-board-move-piece-left ()
+  "Move the current piece left."
+  (interactive)
+  (retris-board-move-piece [-1 0]))
+
+(defun retris-board-move-piece-right ()
+  "Move the current piece right."
+  (interactive)
+  (retris-board-move-piece [1 0]))
 
 
 ;; frontend
@@ -398,6 +412,8 @@ given piece are blanked out instead."
 (define-key retris-mode-map (kbd "g") 'retris-reset)
 (define-key retris-mode-map (kbd "i") 'retris-board-insert-piece)
 (define-key retris-mode-map (kbd "j") 'retris-board-move-piece-down)
+(define-key retris-mode-map (kbd "h") 'retris-board-move-piece-left)
+(define-key retris-mode-map (kbd "l") 'retris-board-move-piece-right)
 
 (defun retris ()
   "Start a game of Retris!"
