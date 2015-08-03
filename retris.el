@@ -115,8 +115,10 @@
 
 (defvar retris-board-width 10
   "Width of the board in tiles.")
-(defvar retris-board-height 20
+(defvar retris-board-height 22
   "Height of the board in tiles.")
+(defvar retris-board-row-skip 2
+  "Number of rows to skip for rendering.")
 (defvar retris-tile-size 8
   "Size of each tile in pixels.")
 (defvar retris-scaling-factor 2
@@ -126,7 +128,8 @@
   (* retris-board-width retris-tile-size retris-scaling-factor)
   "Width of the board image in pixels.")
 (defvar retris-board-pixel-height
-  (* retris-board-height retris-tile-size retris-scaling-factor)
+  (* (- retris-board-height retris-board-row-skip)
+     retris-tile-size retris-scaling-factor)
   "Height of the board image in pixels.")
 
 (defun retris-generate-xpm-header ()
@@ -237,7 +240,7 @@ Retris buffer."
   (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
       (-let [(x y tile-char) item]
-        (retris-render-tile x y tile-char)))
+        (retris-render-tile x (max 0 (- y retris-board-row-skip)) tile-char)))
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
@@ -314,7 +317,7 @@ Return a vector of altered coordinates."
       (aset (aref retris-board (aref xy 1))
             (aref xy 0) filler))))
 
-(defconst retris-board-insertion-coordinate [4 0])
+(defconst retris-board-insertion-coordinate [4 2])
 (defvar retris-board-current-piece-coordinate nil)
 (defvar retris-board-current-piece-char ?t)
 
