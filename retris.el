@@ -47,13 +47,25 @@
 (defconst retris-pieces
   ;; TODO add flash
   ;; TODO add ghost piece
-  '((?t  :tile-char ?c :coordinates [[ 0 0] [1 0] [2 0] [1 1]])
-    (?j  :tile-char ?b :coordinates [[ 0 0] [1 0] [2 0] [2 1]])
-    (?z  :tile-char ?a :coordinates [[ 0 0] [1 0] [1 1] [2 1]])
-    (?o  :tile-char ?c :coordinates [[ 0 0] [1 0] [0 1] [1 1]])
-    (?s  :tile-char ?b :coordinates [[ 1 0] [2 0] [0 1] [1 1]])
-    (?l  :tile-char ?a :coordinates [[ 0 0] [1 0] [2 0] [0 1]])
-    (?i  :tile-char ?c :coordinates [[-1 0] [0 0] [1 0] [2 0]])
+  '((?t  :tile-char ?c :coordinates [[[-1  0] [ 0  0] [ 1  0] [ 0  1]]
+                                     [[ 0 -1] [-1  0] [ 0  0] [ 0  1]]
+                                     [[ 0 -1] [-1  0] [ 0  0] [ 1  0]]
+                                     [[ 0 -1] [ 0  0] [ 1  0] [ 0  1]]])
+    (?j  :tile-char ?b :coordinates [[[-1  0] [ 0  0] [ 1  0] [ 1  1]]
+                                     [[ 0 -1] [ 0  0] [-1  1] [ 0  1]]
+                                     [[-1 -1] [-1  0] [ 0  0] [ 1  0]]
+                                     [[ 0 -1] [ 1 -1] [ 0  0] [ 0  1]]])
+    (?z  :tile-char ?a :coordinates [[[-1  0] [ 0  0] [ 0  1] [ 1  1]]
+                                     [[ 1 -1] [ 0  0] [ 1  0] [ 0  1]]])
+    (?o  :tile-char ?c :coordinates [[[-1  0] [ 0  0] [-1  1] [ 0  1]]])
+    (?s  :tile-char ?b :coordinates [[[ 0  0] [ 1  0] [-1  1] [ 0  1]]
+                                     [[ 0 -1] [ 0  0] [ 1  0] [ 1  1]]])
+    (?l  :tile-char ?a :coordinates [[[-1  0] [ 0  0] [ 1  0] [-1  1]]
+                                     [[-1 -1] [ 0 -1] [ 0  0] [ 0  1]]
+                                     [[ 1 -1] [-1  0] [ 0  0] [ 1  0]]
+                                     [[ 0 -1] [ 0  0] [ 0  1] [ 1  1]]])
+    (?i  :tile-char ?c :coordinates [[[-2  0] [-1  0] [ 0  0] [ 1  0]]
+                                     [[ 0 -2] [ 0 -1] [ 0  0] [ 0  1]]])
     (?\s :tile-char ?x))
   "Alist of plists for piece chars.")
 
@@ -61,8 +73,11 @@
   "Associate PIECE-CHAR with the respective tile char."
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
-(defun retris-coordinates-lookup (piece-char)
-  (plist-get (cdr (assoc piece-char retris-pieces)) :coordinates))
+(defun retris-coordinates-lookup (piece-char &optional rotation)
+  (let* ((piece (cdr (assoc piece-char retris-pieces)))
+         (coordinates (plist-get piece :coordinates))
+         (index (if rotation (mod rotation (length coordinates)) 0)))
+    (aref coordinates index)))
 
 (defconst retris-tiles
   '((?a . [[?^?a?a?a?a?a?a?.]
@@ -317,8 +332,10 @@ Return a vector of altered coordinates."
       (aset (aref retris-board (aref xy 1))
             (aref xy 0) filler))))
 
-(defconst retris-board-insertion-coordinate [4 2])
+(defconst retris-board-insertion-coordinate [5 2])
 (defvar retris-board-current-piece-coordinate nil)
+(defvar retris-board-initial-piece-rotation 0)
+(defvar retris-board-current-piece-rotation nil)
 (defvar retris-board-current-piece-char ?t)
 
 (defun retris-fill-piece (xy piece-char &optional erase)
