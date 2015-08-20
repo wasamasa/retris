@@ -255,7 +255,8 @@ Retris buffer."
   (when (and retris-dirty-p retris-playing-p)
     (dolist (item (retris-diff-boards))
       (-let [(x y tile-char) item]
-        (retris-render-tile x (max 0 (- y retris-board-row-skip)) tile-char)))
+        (when (>= y retris-board-row-skip)
+          (retris-render-tile x (- y retris-board-row-skip) tile-char))))
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
