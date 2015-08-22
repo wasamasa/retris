@@ -73,10 +73,10 @@
   "Associate PIECE-CHAR with the respective tile char."
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
-(defun retris-coordinates-lookup (piece-char &optional rotation)
+(defun retris-coordinates-lookup (piece-char rotation)
   (let* ((piece (cdr (assoc piece-char retris-pieces)))
          (coordinates (plist-get piece :coordinates))
-         (index (if rotation (mod rotation (length coordinates)) 0)))
+         (index (mod rotation (length coordinates))))
     (aref coordinates index)))
 
 (defconst retris-tiles
@@ -335,16 +335,16 @@ Return a vector of altered coordinates."
 
 (defconst retris-board-insertion-coordinate [5 2])
 (defvar retris-board-current-piece-coordinate nil)
-(defvar retris-board-initial-piece-rotation 0)
+(defconst retris-board-initial-piece-rotation 0)
 (defvar retris-board-current-piece-rotation nil)
 (defvar retris-board-current-piece-char ?t)
 
-(defun retris-fill-piece (xy piece-char &optional erase)
+(defun retris-fill-piece (xy piece-char rotation &optional erase)
   "Commit a piece to the board.
 XY is the insertion coordinate vector, PIECE-CHAR is used to
 look up the piece, If ERASE is non-nil, the coordinates of the
 given piece are blanked out instead."
-  (let ((coordinates (retris-coordinates-lookup piece-char)))
+  (let ((coordinates (retris-coordinates-lookup piece-char rotation)))
     (dotimes (i (length coordinates))
       (let ((x (+ (aref (aref coordinates i) 0) (aref xy 0)))
             (y (+ (aref (aref coordinates i) 1) (aref xy 1))))
@@ -353,16 +353,19 @@ given piece are blanked out instead."
 (defun retris-board-insert-piece ()
   "Insert the current piece at the top of the board"
   (interactive)
-  (retris-fill-piece retris-board-insertion-coordinate
-                     retris-board-current-piece-char)
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
-        retris-dirty-p t))
+        retris-board-current-piece-rotation retris-board-initial-piece-rotation)
+  (retris-fill-piece retris-board-current-piece-coordinate
+                     retris-board-current-piece-char
+                     retris-board-current-piece-rotation)
+  (setq retris-dirty-p t))
 
 (defun retris-board-move-piece (vector)
   "Move the current piece by VECTOR."
   (let* ((old-coordinates
           (retris-add-to-coordinates (retris-coordinates-lookup
-                                      retris-board-current-piece-char)
+                                      retris-board-current-piece-char
+                                      retris-board-current-piece-rotation)
                                      retris-board-current-piece-coordinate))
          (new-coordinates (retris-add-to-coordinates old-coordinates vector)))
     (retris-board-set-coordinates old-coordinates ?\s)
