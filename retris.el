@@ -261,22 +261,15 @@ Retris buffer."
           retris-dirty-p nil)
     (with-current-buffer "*retris*"
       (let ((inhibit-read-only t))
-        ;; TODO move point to end, disable region and clicking
         (erase-buffer)
         (insert
          (propertize " " 'display (create-image (concat retris-board-header
                                                         retris-board-body)
                                                 'xpm t
-                                                :color-symbols retris-palette))
-         "\n")))))
-
-;; TODO write a function for erasing and drawing a falling piece
-;; TODO write a function for erasing and drawing a ghost piece
-;; TODO write a function for flashing and erasing a cleared line
-;; TODO write a function for redrawing the compacted stack (probably
-;; erase it completely, then redraw it with every line moved down as
-;; far as possible)
-;; TODO write functions for drawing the HUD (next piece, statistics?)
+                                                :color-symbols retris-palette)
+                     'point-entered (lambda (_ _) (goto-char (point-max))))
+         "\n")
+        (deactivate-mark)))))
 
 
 ;; board manipulation
