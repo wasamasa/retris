@@ -396,6 +396,42 @@ given piece are blanked out instead."
   (interactive)
   (retris-board-move-piece [1 0]))
 
+(defun retris-board-rotate-piece (&optional ccw)
+  "Rotate the current piece clockwise or counter-clockwise.
+Rotate the current piece clockwise if CCW nil, otherwise
+counter-clockwise."
+  (let* ((rotation (+ retris-board-current-piece-rotation (if ccw -1 +1)))
+         (old-coordinates
+          (retris-add-to-coordinates (retris-coordinates-lookup
+                                      retris-board-current-piece-char
+                                      retris-board-current-piece-rotation)
+                                     retris-board-current-piece-coordinate))
+         (new-coordinates
+          (retris-add-to-coordinates (retris-coordinates-lookup
+                                      retris-board-current-piece-char
+                                      rotation)
+                                     retris-board-current-piece-coordinate)))
+    (retris-board-set-coordinates old-coordinates ?\s)
+    (if (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
+             (retris-board-coordinates-free-p new-coordinates))
+        (progn
+          (setq retris-board-current-piece-rotation rotation)
+          (retris-board-set-coordinates new-coordinates
+                                        retris-board-current-piece-char))
+      (retris-board-set-coordinates old-coordinates
+                                    retris-board-current-piece-char))
+    (setq retris-dirty-p t)))
+
+(defun retris-board-rotate-piece-cw ()
+  "Rotate the current piece clockwise."
+  (interactive)
+  (retris-board-rotate-piece))
+
+(defun retris-board-rotate-piece-ccw ()
+  "Rotate the current piece counter-clockwise"
+  (interactive)
+  (retris-board-rotate-piece t))
+
 
 ;; frontend
 
