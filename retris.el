@@ -183,6 +183,36 @@ static char *graphic[] = {
   "XPM body of the board image.")
 
 
+;; scheduling
+
+(defvar retris-frame-length (/ 1.0 60)
+  "Length of an individual frame.")
+(defvar retris-time 0
+  "Amount of ticks that have passed since starting the game.")
+(defvar retris-events nil
+  "List of scheduled events.
+Each event is a four-element vector consisting of INTERVAL,
+REMAINDER and FUNCTION.  When `retris-time' modulo INTERVAL
+equals REMAINDER, FUNCTION is run by `retris-scheduler'.")
+
+(push [30 0 nil retris-board-move-piece-down] retris-events)
+
+(defun retris-scheduled-tasks ()
+  "Return a list of tasks to be run."
+  (let (tasks)
+    (dolist (event retris-events)
+      (when (= (mod retris-time (aref event 0)) (aref event 1))
+        (push (aref event 2) tasks)))
+    tasks))
+
+(defun retris-scheduler ()
+  "Run scheduled tasks, redraw board and advance `retris-time'."
+  (dolist (task (retris-scheduled-tasks))
+    (funcall task))
+  (retris-redraw-board)
+  (setq retris-time (1+ retris-time)))
+
+
 ;; rendering
 
 ;; NOTE this doesn't check for out-of-bounds and is very naive
@@ -436,7 +466,7 @@ counter-clockwise."
   (unless retris-old-board
     (setq retris-old-board (retris-empty-board)))
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
-        retris-timer (run-at-time nil (/ 1.0 60) 'retris-redraw-board)
+        retris-timer (run-at-time nil retris-frame-length 'retris-scheduler)
         retris-board (retris-empty-board)
         retris-playing-p t
         retris-dirty-p t))
