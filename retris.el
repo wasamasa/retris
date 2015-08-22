@@ -350,16 +350,6 @@ given piece are blanked out instead."
             (y (+ (aref (aref coordinates i) 1) (aref xy 1))))
         (aset (aref retris-board y) x (if erase ?\s piece-char))))))
 
-(defun retris-draw-current-piece ()
-  "Draw the current piece to the board."
-  (retris-fill-piece retris-board-current-piece-coordinate
-                     retris-board-current-piece-char))
-
-(defun retris-erase-current-piece ()
-  "Erase the current piece from the board."
-  (retris-fill-piece retris-board-current-piece-coordinate
-                     retris-board-current-piece-char t))
-
 (defun retris-board-insert-piece ()
   "Insert the current piece at the top of the board"
   (interactive)
