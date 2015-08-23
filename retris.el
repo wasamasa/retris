@@ -331,6 +331,10 @@ Retris buffer."
   (-all? 'retris-board-coordinate-free-p
          (append coordinates nil)))
 
+(defun retris-board-coordinates-ok-p (coordinates)
+  (and (not (retris-board-coordinates-out-of-bounds-p coordinates))
+       (retris-board-coordinates-free-p coordinates)))
+
 (defun retris-add-to-coordinate (coordinate vector)
   "Add VECTOR to COORDINATE."
   (vector (+ (aref coordinate 0) (aref vector 0))
@@ -390,8 +394,7 @@ given piece are blanked out instead."
                                      retris-board-current-piece-coordinate))
          (new-coordinates (retris-add-to-coordinates old-coordinates vector)))
     (retris-board-set-coordinates old-coordinates ?\s)
-    (if (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
-             (retris-board-coordinates-free-p new-coordinates))
+    (if (retris-board-coordinates-ok-p new-coordinates)
         (progn
           (setq retris-board-current-piece-coordinate
                 (retris-add-to-coordinate retris-board-current-piece-coordinate
@@ -433,8 +436,7 @@ counter-clockwise."
                                       rotation)
                                      retris-board-current-piece-coordinate)))
     (retris-board-set-coordinates old-coordinates ?\s)
-    (if (and (not (retris-board-coordinates-out-of-bounds-p new-coordinates))
-             (retris-board-coordinates-free-p new-coordinates))
+    (if (retris-board-coordinates-ok-p new-coordinates)
         (progn
           (setq retris-board-current-piece-rotation rotation)
           (retris-board-set-coordinates new-coordinates
