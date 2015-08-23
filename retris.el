@@ -191,11 +191,9 @@ static char *graphic[] = {
   "Amount of ticks that have passed since starting the game.")
 (defvar retris-events nil
   "List of scheduled events.
-Each event is a four-element vector consisting of INTERVAL,
+Each event is a three-element vector consisting of INTERVAL,
 REMAINDER and FUNCTION.  When `retris-time' modulo INTERVAL
 equals REMAINDER, FUNCTION is run by `retris-scheduler'.")
-
-(push [30 0 nil retris-board-move-piece-down] retris-events)
 
 (defun retris-scheduled-tasks ()
   "Return a list of tasks to be run."
@@ -499,7 +497,9 @@ counter-clockwise."
   "Start a game of Retris!"
   (interactive)
   (with-current-buffer (get-buffer-create "*retris*")
-    (retris-mode))
+    (retris-mode)
+    (retris-board-insert-piece)
+    (push [30 0 retris-board-move-piece-down] retris-events))
   (display-buffer "*retris*"))
 
 (provide 'retris)
