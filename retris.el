@@ -69,6 +69,12 @@
     (?\s :tile-char ?x))
   "Alist of plists for piece chars.")
 
+;; FIXME do better than this by shuffling two bags seven pieces each,
+;; popping a piece and when empty, setting up two bags again
+(defun retris-random-piece ()
+  "Pick a random piece char."
+  (car (nth (random 7) retris-pieces)))
+
 (defun retris-tile-char-lookup (piece-char)
   "Associate PIECE-CHAR with the respective tile char."
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
