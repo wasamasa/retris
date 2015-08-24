@@ -79,11 +79,15 @@
   "Associate PIECE-CHAR with the respective tile char."
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
+(defun retris-rotation-lookup (piece-char rotation &optional ccw)
+  (let* ((piece (cdr (assoc piece-char retris-pieces)))
+         (coordinates (plist-get piece :coordinates)))
+    (mod (+ rotation (if ccw -1 +1)) (length coordinates))))
+
 (defun retris-coordinates-lookup (piece-char rotation)
   (let* ((piece (cdr (assoc piece-char retris-pieces)))
-         (coordinates (plist-get piece :coordinates))
-         (index (mod rotation (length coordinates))))
-    (aref coordinates index)))
+         (coordinates (plist-get piece :coordinates)))
+    (aref coordinates rotation)))
 
 (defconst retris-tiles
   '((?a . [[?^?a?a?a?a?a?a?.]
@@ -421,7 +425,9 @@ Return a vector of altered coordinates."
   "Rotate the current piece clockwise or counter-clockwise.
 Rotate the current piece clockwise if CCW nil, otherwise
 counter-clockwise."
-  (let* ((rotation (+ retris-board-current-piece-rotation (if ccw -1 +1)))
+  (let* ((rotation
+          (retris-rotation-lookup retris-board-current-piece-char
+                                  retris-board-current-piece-rotation ccw))
          (old-coordinates
           (retris-add-to-coordinates (retris-coordinates-lookup
                                       retris-board-current-piece-char
