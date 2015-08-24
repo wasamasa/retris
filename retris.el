@@ -170,7 +170,7 @@ static char *graphic[] = {
    (apply 'concat (--map (format "\"%c s %s\",\n" (car it) (cdr it))
                          retris-colors))))
 
-(defvar retris-board-header (retris-generate-xpm-header)
+(defvar retris-board-header nil
   "XPM header of the board image.")
 
 (defvar retris-filler (car (rassoc "black" retris-colors))
@@ -185,7 +185,7 @@ static char *graphic[] = {
         (apply 'concat))
    "}"))
 
-(defvar retris-board-body (retris-generate-xpm-body)
+(defvar retris-board-body nil
   "XPM body of the board image.")
 
 
@@ -472,6 +472,8 @@ counter-clockwise."
   (unless retris-old-board
     (setq retris-old-board (retris-empty-board)))
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
+        retris-board-header (retris-generate-xpm-header)
+        retris-board-body (retris-generate-xpm-body)
         retris-timer (run-at-time nil retris-frame-length 'retris-scheduler)
         retris-board (retris-empty-board)
         retris-playing-p t
