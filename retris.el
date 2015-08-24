@@ -370,25 +370,16 @@ Return a vector of altered coordinates."
 (defvar retris-board-current-piece-rotation nil)
 (defvar retris-board-current-piece-char ?t)
 
-(defun retris-fill-piece (xy piece-char rotation &optional erase)
-  "Commit a piece to the board.
-XY is the insertion coordinate vector, PIECE-CHAR is used to
-look up the piece, If ERASE is non-nil, the coordinates of the
-given piece are blanked out instead."
-  (let ((coordinates (retris-coordinates-lookup piece-char rotation)))
-    (dotimes (i (length coordinates))
-      (let ((x (+ (aref (aref coordinates i) 0) (aref xy 0)))
-            (y (+ (aref (aref coordinates i) 1) (aref xy 1))))
-        (aset (aref retris-board y) x (if erase ?\s piece-char))))))
-
 (defun retris-board-insert-piece ()
   "Insert the current piece at the top of the board"
-  (interactive)
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-board-current-piece-rotation retris-board-initial-piece-rotation)
-  (retris-fill-piece retris-board-current-piece-coordinate
-                     retris-board-current-piece-char
-                     retris-board-current-piece-rotation)
+  (retris-board-set-coordinates
+   (retris-add-to-coordinates (retris-coordinates-lookup
+                               retris-board-current-piece-char
+                               retris-board-current-piece-rotation)
+                              retris-board-current-piece-coordinate)
+   retris-board-current-piece-char)
   (setq retris-dirty-p t))
 
 (defun retris-board-move-piece (vector)
