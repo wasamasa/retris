@@ -393,7 +393,8 @@ Return a vector of altered coordinates."
                                       retris-board-current-piece-char
                                       retris-board-current-piece-rotation)
                                      retris-board-current-piece-coordinate))
-         (new-coordinates (retris-add-to-coordinates old-coordinates vector)))
+         (new-coordinates (retris-add-to-coordinates old-coordinates vector))
+         success)
     (retris-board-set-coordinates old-coordinates ?\s)
     (if (retris-board-coordinates-ok-p new-coordinates)
         (progn
@@ -401,10 +402,12 @@ Return a vector of altered coordinates."
                 (retris-add-to-coordinate retris-board-current-piece-coordinate
                                           vector))
           (retris-board-set-coordinates new-coordinates
-                                        retris-board-current-piece-char))
+                                        retris-board-current-piece-char)
+          (setq success t))
       (retris-board-set-coordinates old-coordinates
                                     retris-board-current-piece-char))
-    (setq retris-dirty-p t)))
+    (setq retris-dirty-p t)
+    success))
 
 (defun retris-board-move-piece-down ()
   "Move the current piece down."
@@ -437,16 +440,19 @@ counter-clockwise."
           (retris-add-to-coordinates (retris-coordinates-lookup
                                       retris-board-current-piece-char
                                       rotation)
-                                     retris-board-current-piece-coordinate)))
+                                     retris-board-current-piece-coordinate))
+         success)
     (retris-board-set-coordinates old-coordinates ?\s)
     (if (retris-board-coordinates-ok-p new-coordinates)
         (progn
           (setq retris-board-current-piece-rotation rotation)
           (retris-board-set-coordinates new-coordinates
-                                        retris-board-current-piece-char))
+                                        retris-board-current-piece-char)
+          (setq success t))
       (retris-board-set-coordinates old-coordinates
                                     retris-board-current-piece-char))
-    (setq retris-dirty-p t)))
+    (setq retris-dirty-p t)
+    success))
 
 (defun retris-board-rotate-piece-cw ()
   "Rotate the current piece clockwise."
@@ -469,6 +475,7 @@ counter-clockwise."
   (unless retris-old-board
     (setq retris-old-board (retris-empty-board)))
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
+        retris-board-current-piece-char (retris-random-piece)
         retris-board-header (retris-generate-xpm-header)
         retris-board-body (retris-generate-xpm-body)
         retris-time 0
@@ -489,7 +496,6 @@ counter-clockwise."
 
 (define-key retris-mode-map (kbd "p") 'retris-play-or-pause)
 (define-key retris-mode-map (kbd "g") 'retris-reset)
-(define-key retris-mode-map (kbd "i") 'retris-board-insert-piece)
 (define-key retris-mode-map (kbd "j") 'retris-board-move-piece-down)
 (define-key retris-mode-map (kbd "h") 'retris-board-move-piece-left)
 (define-key retris-mode-map (kbd "l") 'retris-board-move-piece-right)
@@ -501,13 +507,23 @@ counter-clockwise."
 (define-key retris-mode-map (kbd "<down>") 'retris-board-move-piece-down)
 (define-key retris-mode-map (kbd "<up>") 'retris-board-rotate-piece-cw)
 
+(defun retris-advance-game ()
+  "Try moving the current piece down.
+If this fails, spawn a new piece."
+  (when (not (retris-board-move-piece-down))
+    (setq retris-board-current-piece-char (retris-random-piece))
+    (retris-board-insert-piece)
+    (setq retris-dirty-p t)))
+
 (defun retris ()
   "Start a game of Retris!"
   (interactive)
   (with-current-buffer (get-buffer-create "*retris*")
     (retris-mode)
     (retris-board-insert-piece)
-    (push [30 0 retris-board-move-piece-down] retris-events))
+    (sleep-for 0.5)
+    (discard-input)
+    (setq retris-events '([30 0 retris-advance-game])))
   (display-buffer "*retris*"))
 
 (provide 'retris)
