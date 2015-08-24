@@ -471,6 +471,7 @@ counter-clockwise."
   (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
         retris-board-header (retris-generate-xpm-header)
         retris-board-body (retris-generate-xpm-body)
+        retris-time 0
         retris-timer (run-at-time nil retris-frame-length 'retris-scheduler)
         retris-board (retris-empty-board)
         retris-playing-p t
