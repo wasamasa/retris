@@ -215,10 +215,11 @@ equals REMAINDER, FUNCTION is run by `retris-scheduler'.")
 
 (defun retris-scheduler ()
   "Run scheduled tasks, redraw board and advance `retris-time'."
-  (dolist (task (retris-scheduled-tasks))
-    (funcall task))
-  (retris-redraw-board)
-  (setq retris-time (1+ retris-time)))
+  (when retris-playing-p
+    (dolist (task (retris-scheduled-tasks))
+      (funcall task))
+    (retris-redraw-board)
+    (setq retris-time (1+ retris-time))))
 
 
 ;; rendering
@@ -376,38 +377,40 @@ Return a vector of altered coordinates."
 
 (defun retris-board-insert-piece ()
   "Insert the current piece at the top of the board"
-  (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
-        retris-board-current-piece-rotation retris-board-initial-piece-rotation)
-  (retris-board-set-coordinates
-   (retris-add-to-coordinates (retris-coordinates-lookup
-                               retris-board-current-piece-char
-                               retris-board-current-piece-rotation)
-                              retris-board-current-piece-coordinate)
-   retris-board-current-piece-char)
-  (setq retris-dirty-p t))
+  (when retris-playing-p
+    (setq retris-board-current-piece-coordinate retris-board-insertion-coordinate
+          retris-board-current-piece-rotation retris-board-initial-piece-rotation)
+    (retris-board-set-coordinates
+     (retris-add-to-coordinates (retris-coordinates-lookup
+                                 retris-board-current-piece-char
+                                 retris-board-current-piece-rotation)
+                                retris-board-current-piece-coordinate)
+     retris-board-current-piece-char)
+    (setq retris-dirty-p t)))
 
 (defun retris-board-move-piece (vector)
   "Move the current piece by VECTOR."
-  (let* ((old-coordinates
-          (retris-add-to-coordinates (retris-coordinates-lookup
-                                      retris-board-current-piece-char
-                                      retris-board-current-piece-rotation)
-                                     retris-board-current-piece-coordinate))
-         (new-coordinates (retris-add-to-coordinates old-coordinates vector))
-         success)
-    (retris-board-set-coordinates old-coordinates ?\s)
-    (if (retris-board-coordinates-ok-p new-coordinates)
-        (progn
-          (setq retris-board-current-piece-coordinate
-                (retris-add-to-coordinate retris-board-current-piece-coordinate
-                                          vector))
-          (retris-board-set-coordinates new-coordinates
-                                        retris-board-current-piece-char)
-          (setq success t))
-      (retris-board-set-coordinates old-coordinates
-                                    retris-board-current-piece-char))
-    (setq retris-dirty-p t)
-    success))
+  (when retris-playing-p
+    (let* ((old-coordinates
+            (retris-add-to-coordinates (retris-coordinates-lookup
+                                        retris-board-current-piece-char
+                                        retris-board-current-piece-rotation)
+                                       retris-board-current-piece-coordinate))
+           (new-coordinates (retris-add-to-coordinates old-coordinates vector))
+           success)
+      (retris-board-set-coordinates old-coordinates ?\s)
+      (if (retris-board-coordinates-ok-p new-coordinates)
+          (progn
+            (setq retris-board-current-piece-coordinate
+                  (retris-add-to-coordinate retris-board-current-piece-coordinate
+                                            vector))
+            (retris-board-set-coordinates new-coordinates
+                                          retris-board-current-piece-char)
+            (setq success t))
+        (retris-board-set-coordinates old-coordinates
+                                      retris-board-current-piece-char))
+      (setq retris-dirty-p t)
+      success)))
 
 (defun retris-board-move-piece-down ()
   "Move the current piece down."
@@ -428,31 +431,32 @@ Return a vector of altered coordinates."
   "Rotate the current piece clockwise or counter-clockwise.
 Rotate the current piece clockwise if CCW nil, otherwise
 counter-clockwise."
-  (let* ((rotation
-          (retris-rotation-lookup retris-board-current-piece-char
-                                  retris-board-current-piece-rotation ccw))
-         (old-coordinates
-          (retris-add-to-coordinates (retris-coordinates-lookup
-                                      retris-board-current-piece-char
-                                      retris-board-current-piece-rotation)
-                                     retris-board-current-piece-coordinate))
-         (new-coordinates
-          (retris-add-to-coordinates (retris-coordinates-lookup
-                                      retris-board-current-piece-char
-                                      rotation)
-                                     retris-board-current-piece-coordinate))
-         success)
-    (retris-board-set-coordinates old-coordinates ?\s)
-    (if (retris-board-coordinates-ok-p new-coordinates)
-        (progn
-          (setq retris-board-current-piece-rotation rotation)
-          (retris-board-set-coordinates new-coordinates
-                                        retris-board-current-piece-char)
-          (setq success t))
-      (retris-board-set-coordinates old-coordinates
-                                    retris-board-current-piece-char))
-    (setq retris-dirty-p t)
-    success))
+  (when retris-playing-p
+    (let* ((rotation
+            (retris-rotation-lookup retris-board-current-piece-char
+                                    retris-board-current-piece-rotation ccw))
+           (old-coordinates
+            (retris-add-to-coordinates (retris-coordinates-lookup
+                                        retris-board-current-piece-char
+                                        retris-board-current-piece-rotation)
+                                       retris-board-current-piece-coordinate))
+           (new-coordinates
+            (retris-add-to-coordinates (retris-coordinates-lookup
+                                        retris-board-current-piece-char
+                                        rotation)
+                                       retris-board-current-piece-coordinate))
+           success)
+      (retris-board-set-coordinates old-coordinates ?\s)
+      (if (retris-board-coordinates-ok-p new-coordinates)
+          (progn
+            (setq retris-board-current-piece-rotation rotation)
+            (retris-board-set-coordinates new-coordinates
+                                          retris-board-current-piece-char)
+            (setq success t))
+        (retris-board-set-coordinates old-coordinates
+                                      retris-board-current-piece-char))
+      (setq retris-dirty-p t)
+      success)))
 
 (defun retris-board-rotate-piece-cw ()
   "Rotate the current piece clockwise."
