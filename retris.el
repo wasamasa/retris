@@ -496,8 +496,9 @@ counter-clockwise."
 
 (define-key retris-mode-map (kbd "p") 'retris-play-or-pause)
 (define-key retris-mode-map (kbd "g") 'retris-reset)
-(define-key retris-mode-map (kbd "j") 'retris-board-move-piece-down)
 (define-key retris-mode-map (kbd "h") 'retris-board-move-piece-left)
+(define-key retris-mode-map (kbd "j") 'retris-board-move-piece-down)
+(define-key retris-mode-map (kbd "k") 'retris-board-rotate-piece-cw)
 (define-key retris-mode-map (kbd "l") 'retris-board-move-piece-right)
 (define-key retris-mode-map (kbd "z") 'retris-board-rotate-piece-ccw)
 (define-key retris-mode-map (kbd "y") 'retris-board-rotate-piece-ccw)
