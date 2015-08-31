@@ -467,6 +467,49 @@ counter-clockwise."
   (interactive)
   (retris-board-rotate-piece t))
 
+(defun retris-row-state (row)
+  "Return the state of ROW.
+It can be either of 'blank for a row of spaces, 'full for a row
+of letters or 'mixed for anything else."
+  (let ((i 0)
+        (size (length row))
+        blank-char
+        full-char)
+    ;; to determine whether a row is mixed, you only need to encounter
+    ;; one blank and one non-blank char and can terminate the search
+    (while (and (not (and blank-char full-char))
+                (< i size))
+      (let ((char (aref row i)))
+        (if (= char ?\s)
+            (setq blank-char t)
+          (setq full-char t)))
+      (setq i (1+ i)))
+    (cond
+     ((and blank-char full-char) 'mixed)
+     (blank-char 'blank)
+     (full-char 'full))))
+
+(defun retris-compact-stack ()
+  "Remove full rows from board and compact the stack.
+This checks the rows of `retris-board' in reverse order, then
+copies rows which are neither full nor empty to an empty board.
+Returns the number of deleted rows."
+  (interactive)
+  (let ((new-board (retris-empty-board))
+        (j (1- retris-board-height))
+        (changed 0))
+    (dotimes (i retris-board-height)
+      (let* ((row (aref retris-board (1- (- retris-board-height i))))
+             (state (retris-row-state row)))
+        (cond
+         ((eq state 'mixed)
+          (aset new-board j row)
+          (setq j (1- j)))
+         ((eq state 'full)
+          (setq changed (1+ changed))))))
+    (setq retris-board new-board)
+    changed))
+
 
 ;; frontend
 
@@ -515,6 +558,7 @@ counter-clockwise."
   "Try moving the current piece down.
 If this fails, spawn a new piece."
   (when (not (retris-board-move-piece-down))
+    (retris-compact-stack)
     (setq retris-board-current-piece-char (retris-random-piece))
     (retris-board-insert-piece)
     (setq retris-dirty-p t)))
