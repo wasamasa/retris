@@ -80,11 +80,15 @@
   (plist-get (cdr (assoc piece-char retris-pieces)) :tile-char))
 
 (defun retris-rotation-lookup (piece-char rotation &optional ccw)
+  "Returns next possible rotation for PIECE-CHAR and ROTATION.
+If CCW is non-nil, look-up is done for counter-clockwise
+rotation, otherwise clockwise rotation."
   (let* ((piece (cdr (assoc piece-char retris-pieces)))
          (coordinates (plist-get piece :coordinates)))
     (mod (+ rotation (if ccw -1 +1)) (length coordinates))))
 
 (defun retris-coordinates-lookup (piece-char rotation)
+  "Returns coordinates for PIECE-CHAR and ROTATION."
   (let* ((piece (cdr (assoc piece-char retris-pieces)))
          (coordinates (plist-get piece :coordinates)))
     (aref coordinates rotation)))
@@ -314,6 +318,7 @@ Retris buffer."
 ;; board manipulation
 
 (defun retris-empty-board ()
+  "Return an empty board."
   (let ((board (make-vector retris-board-height nil)))
     (dotimes (i retris-board-height)
       (aset board i (make-vector retris-board-width ?\s)))
@@ -343,6 +348,7 @@ Retris buffer."
          (append coordinates nil)))
 
 (defun retris-board-coordinates-ok-p (coordinates)
+  "Non-nil if COORDINATES are both on the board and free."
   (and (not (retris-board-coordinates-out-of-bounds-p coordinates))
        (retris-board-coordinates-free-p coordinates)))
 
@@ -368,11 +374,17 @@ Return a vector of altered coordinates."
       (aset (aref retris-board (aref xy 1))
             (aref xy 0) filler))))
 
-(defconst retris-board-insertion-coordinate [5 2])
-(defvar retris-board-current-piece-coordinate nil)
-(defconst retris-board-initial-piece-rotation 0)
-(defvar retris-board-current-piece-rotation nil)
-(defvar retris-board-current-piece-char ?t)
+(defconst retris-board-insertion-coordinate [5 2]
+  "Insertion coordinate for a newly spawned piece.")
+(defconst retris-board-initial-piece-rotation 0
+  "Rotation for a newly spawned piece.")
+
+(defvar retris-board-current-piece-coordinate nil
+  "Coordinate of the currently moving piece.")
+(defvar retris-board-current-piece-rotation nil
+  "Rotation of the currently moving piece.")
+(defvar retris-board-current-piece-char ?t
+  "Piece character of the currently moving piece.")
 
 (defun retris-board-insert-piece ()
   "Insert the current piece at the top of the board"
