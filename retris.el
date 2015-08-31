@@ -438,6 +438,14 @@ Return a vector of altered coordinates."
   (interactive)
   (retris-board-move-piece [1 0]))
 
+(defun retris-board-move-piece-bottom ()
+  "Drop the current piece all the way to the bottom."
+  (interactive)
+  ;; FIXME this isn't ideal as you can see flicker from the individual
+  ;; movements; it would be better to put that logic into the movement
+  ;; commands and fix the abstraction of the movement code, too
+  (while (retris-board-move-piece-down)))
+
 (defun retris-board-rotate-piece (&optional ccw)
   "Rotate the current piece clockwise or counter-clockwise.
 Rotate the current piece clockwise if CCW nil, otherwise
@@ -561,6 +569,7 @@ Returns the number of deleted rows."
 (define-key retris-mode-map (kbd "z") 'retris-board-rotate-piece-ccw)
 (define-key retris-mode-map (kbd "y") 'retris-board-rotate-piece-ccw)
 (define-key retris-mode-map (kbd "x") 'retris-board-rotate-piece-cw)
+(define-key retris-mode-map (kbd "SPC") 'retris-board-move-piece-bottom)
 (define-key retris-mode-map (kbd "<left>") 'retris-board-move-piece-left)
 (define-key retris-mode-map (kbd "<right>") 'retris-board-move-piece-right)
 (define-key retris-mode-map (kbd "<down>") 'retris-board-move-piece-down)
