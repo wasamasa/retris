@@ -357,9 +357,8 @@ Return a vector of altered coordinates."
   (let* ((size (length coordinates))
          (i 0)
          (result (make-vector size nil)))
-    (while (< i size)
-      (aset result i (retris-add-to-coordinate (aref coordinates i) vector))
-      (setq i (1+ i)))
+    (dotimes (i size)
+      (aset result i (retris-add-to-coordinate (aref coordinates i) vector)))
     result))
 
 (defun retris-board-set-coordinates (coordinates filler)
