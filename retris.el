@@ -36,7 +36,10 @@
 (require 'dash)
 
 
-;; variables
+;; basics
+
+(defvar retris-buffer-name "*retris*"
+  "Buffer name used for the Retris buffer.")
 
 (defvar retris-board nil
   "Board grid.")
@@ -302,7 +305,7 @@ Retris buffer."
           (retris-render-tile x (- y retris-board-row-skip) tile-char))))
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
-    (with-current-buffer "*retris*"
+    (with-current-buffer retris-buffer-name
       (let ((inhibit-read-only t))
         (erase-buffer)
         (insert
@@ -587,13 +590,13 @@ If this fails, spawn a new piece."
 (defun retris ()
   "Start a game of Retris!"
   (interactive)
-  (with-current-buffer (get-buffer-create "*retris*")
+  (with-current-buffer (get-buffer-create retris-buffer-name)
     (retris-mode)
     (retris-board-insert-piece)
     (sleep-for 0.5)
     (discard-input)
     (setq retris-events '([30 0 retris-advance-game])))
-  (display-buffer "*retris*"))
+  (display-buffer retris-buffer-name))
 
 (provide 'retris)
 ;;; retris.el ends here
