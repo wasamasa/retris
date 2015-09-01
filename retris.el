@@ -222,7 +222,7 @@ equals REMAINDER, FUNCTION is run by `retris-scheduler'.")
 
 (defun retris-scheduler ()
   "Run scheduled tasks, redraw board and advance `retris-time'."
-  (when retris-playing-p
+  (when (and retris-playing-p (get-buffer-window retris-buffer-name))
     (dolist (task (retris-scheduled-tasks))
       (funcall task))
     (retris-redraw-board)
