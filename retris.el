@@ -72,11 +72,31 @@
     (?\s :tile-char ?x))
   "Alist of plists for piece chars.")
 
-;; FIXME do better than this by shuffling two bags seven pieces each,
-;; popping a piece and when empty, setting up two bags again
+(defvar retris-bag nil
+  "Bag of shuffled pieces to draw from.")
+
+(defun retris-bag ()
+  "Return a bag of shuffled pieces.
+This implements a Knuth shuffle."
+  (let* ((pieces (vector 0 1 2 3 4 5 6))
+         (i (1- (length pieces)))
+         j)
+    (while (>= i 1)
+      (setq j (random (1+ i)))
+      (let ((a (aref pieces i))
+            (b (aref pieces j)))
+        (aset pieces i b)
+        (aset pieces j a))
+      (setq i (1- i)))
+    (append pieces nil)))
+
 (defun retris-random-piece ()
-  "Pick a random piece char."
-  (car (nth (random 7) retris-pieces)))
+  "Pick a random piece char.
+If `retris-bag' is empty, refill it beforehand with
+`retris-bag'."
+  (when (not retris-bag)
+    (setq retris-bag (retris-bag)))
+  (car (nth (pop retris-bag) retris-pieces)))
 
 (defun retris-tile-char-lookup (piece-char)
   "Associate PIECE-CHAR with the respective tile char."
