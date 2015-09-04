@@ -334,7 +334,8 @@ Retris buffer."
     (setq retris-old-board (copy-tree retris-board t)
           retris-dirty-p nil)
     (with-current-buffer retris-buffer-name
-      (let ((inhibit-read-only t))
+      (let ((inhibit-read-only t)
+            (window (get-buffer-window retris-buffer-name)))
         (erase-buffer)
         (insert
          (propertize " " 'display (create-image (concat retris-board-header
@@ -343,6 +344,7 @@ Retris buffer."
                                                 :color-symbols retris-palette)
                      'point-entered (lambda (_ _) (goto-char (point-max))))
          "\n")
+        (set-window-point window (point-max))
         (deactivate-mark)))))
 
 
