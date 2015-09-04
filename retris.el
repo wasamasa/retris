@@ -75,6 +75,11 @@
 (defvar retris-bag nil
   "Bag of shuffled pieces to draw from.")
 
+(defvar retris-bag-index 0
+  "Index of the next shuffled piece to be drawn.
+Once it goes beyond its maximum value, it should be reset to its
+initial value and a new bag set up.")
+
 (defun retris-bag ()
   "Return a bag of shuffled pieces.
 This implements a Knuth shuffle."
@@ -88,15 +93,18 @@ This implements a Knuth shuffle."
         (aset pieces i b)
         (aset pieces j a))
       (setq i (1- i)))
-    (append pieces nil)))
+    pieces))
 
 (defun retris-random-piece ()
   "Pick a random piece char.
-If `retris-bag' is empty, refill it beforehand with
-`retris-bag'."
-  (when (not retris-bag)
-    (setq retris-bag (retris-bag)))
-  (car (nth (pop retris-bag) retris-pieces)))
+If `retris-bag' is empty, refill it with `retris-bag' first."
+  (when (>= retris-bag-index (length retris-bag))
+    (setq retris-bag-index 0
+          retris-bag (retris-bag)))
+  (let ((piece (car (nth (aref retris-bag retris-bag-index)
+                         retris-pieces))))
+    (setq retris-bag-index (1+ retris-bag-index))
+    piece))
 
 (defun retris-tile-char-lookup (piece-char)
   "Associate PIECE-CHAR with the respective tile char."
@@ -570,6 +578,7 @@ Returns the number of deleted rows."
         retris-time 0
         retris-timer (run-at-time nil retris-frame-length 'retris-scheduler)
         retris-board (retris-empty-board)
+        retris-bag (retris-bag)
         retris-playing-p t
         retris-dirty-p t))
 
