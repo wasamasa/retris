@@ -230,6 +230,9 @@ static char *graphic[] = {
 
 ;;; scheduling
 
+;; FIXME: Introduce an OFFSET field which is decremented until its
+;; zero.  Events are only considered to be runif this field is zero.
+
 (defvar retris-frame-length (/ 1.0 60)
   "Length of an individual frame.")
 (defvar retris-time 0
@@ -566,6 +569,7 @@ Returns the number of deleted rows."
 
 ;;; frontend
 
+;; FIXME resetting should probably be distinct from starting a new game
 (defun retris-reset ()
   "Reset the game to its initial state."
   (interactive)
