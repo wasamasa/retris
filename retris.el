@@ -36,7 +36,7 @@
 (require 'dash)
 
 
-;; basics
+;;; basics
 
 (defvar retris-buffer-name "*retris*"
   "Buffer name used for the Retris buffer.")
@@ -228,7 +228,7 @@ static char *graphic[] = {
   "XPM body of the board image.")
 
 
-;; scheduling
+;;; scheduling
 
 (defvar retris-frame-length (/ 1.0 60)
   "Length of an individual frame.")
@@ -257,7 +257,7 @@ equals REMAINDER, FUNCTION is run by `retris-scheduler'.")
     (setq retris-time (1+ retris-time))))
 
 
-;; rendering
+;;; rendering
 
 ;; NOTE this doesn't check for out-of-bounds and is very naive
 (defsubst retris--xpm-body-offset (x y)
@@ -348,7 +348,7 @@ Retris buffer."
         (deactivate-mark)))))
 
 
-;; board manipulation
+;;; board manipulation
 
 (defun retris-empty-board ()
   "Return an empty board."
@@ -564,7 +564,7 @@ Returns the number of deleted rows."
     changed))
 
 
-;; frontend
+;;; frontend
 
 (defun retris-reset ()
   "Reset the game to its initial state."
