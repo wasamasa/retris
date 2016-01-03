@@ -345,7 +345,8 @@ Retris buffer."
                                                         retris-board-body)
                                                 'xpm t
                                                 :color-symbols retris-palette)
-                     'point-entered (lambda (_ _) (goto-char (point-max))))
+                     'point-entered (lambda (_old _new)
+                                      (goto-char (point-max))))
          "\n")
         (set-window-point window (point-max))
         (deactivate-mark)))))
